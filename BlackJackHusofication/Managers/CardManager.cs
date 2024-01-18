@@ -11,7 +11,7 @@ internal class CardManager
         {
             result += GetCardCount(card);
         }
-        if (CheckIfHandIsSoft(hand)) {
+        if (CheckIfHandIsSoft(hand, result)) {
             result += 10; //then count ace as 11
             hand.IsSoft = true;
         } 
@@ -36,9 +36,9 @@ internal class CardManager
         };
     }
 
-    public static bool CheckIfHandIsSoft(Hand hand)
+    public static bool CheckIfHandIsSoft(Hand hand, int handValue)
     {
         //If there is ace and count doesnt exceed 21 then it is a soft hand.
-        return hand.Cards.Any(x => x.CardValue == CardValue.Ace) && hand.HandValue + 10 <= 21;
+        return hand.Cards.Any(x => x.CardValue == CardValue.Ace) && handValue + 10 <= 21;
     }
 }
