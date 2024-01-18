@@ -33,5 +33,6 @@ public enum CardAction
 {
     Hit = 1,
     Double = 2,
-    Stand = 3
+    Stand = 3,
+    Split = 4
 }

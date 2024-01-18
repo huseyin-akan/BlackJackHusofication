@@ -15,5 +15,5 @@ internal class Player
     public bool HasBetted { get; set; }
 
     public Hand Hand {get; set;}
-    public Hand? DoubleHand {get; set;}
+    public Hand? SplittedHand {get; set;}
 }

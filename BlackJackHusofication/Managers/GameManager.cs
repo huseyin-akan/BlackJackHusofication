@@ -5,18 +5,27 @@ namespace BlackJackHusofication.Managers;
 
 internal class GameManager
 {
-    private int roundNo = 0;
-    private List<Card> deck = [];
-    private readonly List<Card> playedCard = [];
-    private Dealer dealer;
-    private readonly List<Player> players = [];
-    private readonly bool[] spots = new bool[8];
+    private int roundNo;
+    private List<Card> deck;
+    private readonly List<Card> playedCards;
+    private readonly Dealer dealer;
+    private readonly List<Player> players;
+    private readonly bool[] spots; 
+
+    public GameManager()
+    {
+        roundNo = 0;
+        spots = new bool[8];
+        players = [];
+        playedCards = [];
+        deck = [];
+        dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
+        
+        StartNewGame();
+    }
 
     public void StartNewGame()
     {
-        roundNo = 0;
-        dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
-
         ConsoleHelper.WriteLine("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.", ConsoleColor.DarkGreen);
 
         deck = DeckHelper.CreateFullDeck(8);
@@ -50,20 +59,27 @@ internal class GameManager
     {
         //If everyone is busted, dealer wins. 
         if (!players.Any(x => !x.Hand.IsBusted) 
-            && !players.Any(x => x.DoubleHand is not null && !x.DoubleHand.IsBusted)) return; 
-        
-        //Otherwise dealers opens card
+            && !players.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
+
+        //Otherwise dealers opens card and hits until at least 17
+        while(dealer.Hand.HandValue < 17) DealCard(dealer.Hand);
     }
 
     private void AskAllPlayersForActions()
     {
         foreach (var player in players.Where(x => x.HasBetted))
         {
-            var shouldAskPlayer = true;
-            while (shouldAskPlayer)
+            var shouldAskForNormalHand = true;
+            while (shouldAskForNormalHand)
             {
-                var playerAction = AskForAction(player);
-                shouldAskPlayer = ApplyPlayerAction(player, playerAction);
+                var playerAction = AskForAction(player.Hand);
+                shouldAskForNormalHand = ApplyPlayerAction(player, playerAction);
+            }
+            var shouldAskForSplitHand = true;
+            while (shouldAskForSplitHand)
+            {
+                var playerAction = AskForAction(player.SplittedHand, true);
+                shouldAskForNormalHand = ApplyPlayerAction(player, playerAction);
             }
         }
     }
@@ -75,8 +91,19 @@ internal class GameManager
             CardAction.Stand => false,
             CardAction.Hit => ApplyHit(player),
             CardAction.Double => ApplyDouble(player),
+            CardAction.Split => ApplySplit(player),
             _ => throw new Exception("La nasıl olur bu!!!")
         };
+    }
+
+    private bool ApplySplit(Player player)
+    {
+        player.SplittedHand = new Hand();
+        var splitCard = player.Hand.Cards[1];
+        player.Hand.Cards.Remove(splitCard);
+        player.SplittedHand.Cards.Add(splitCard);
+        DealCard(player.Hand);
+        return true;
     }
 
     private bool ApplyHit(Player player)
@@ -89,12 +116,13 @@ internal class GameManager
         throw new NotImplementedException();
     }
 
-    private CardAction AskForAction(Player player)
+    private CardAction AskForAction(Hand? hand, bool isSplitHand= false)
     {
-        return OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], player.Hand);
+        if (hand is null) return CardAction.Stand;
+        return OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], hand, isSplitHand);
     }
 
-    public void StartNewRound()
+    private void StartNewRound()
     {
         roundNo++;
         AcceptTheBets();
@@ -123,26 +151,27 @@ internal class GameManager
         players.Add(new Player() { Id = 8, Name = "Husoka", Balance = 1_270 });
     }
 
-    public void DealTheCards()
+    private void DealTheCards()
     {
         for (int i = 0; i < 2; i++)
         {
-            //Deal for all players
-            foreach (var player in players.Where(x => x.HasBetted)) DealCard(player);
+            //Deal for all players who has betted
+            foreach (var player in players.Where(x => x.HasBetted)) DealCard(player.Hand);
  
             //Deal for dealer
-            DealCard(dealer);
+            DealCard(dealer.Hand);
         }
     }
 
-    public void DealCard(Player player)
+    private void DealCard(Hand hand)
     {
         var card = deck[0];
         deck.Remove(deck[0]);
-        player.Hand.Cards.Add(card);
+        hand.Cards.Add(card);
+        hand.HandValue = CardManager.GetCountOfHand(hand);
     }
 
-    public int GivePlayerSpot(int spotNo = 1)
+    private int GivePlayerSpot(int spotNo = 1)
     {
         if (spotNo == 1) spotNo = Array.IndexOf(spots, false);
         if (spotNo == -1) return -1;
