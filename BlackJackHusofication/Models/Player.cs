@@ -1,7 +1,6 @@
-﻿
-namespace BlackJackHusofication.Models;
+﻿namespace BlackJackHusofication.Models;
 
-internal class Player
+public class Player
 {
     public Player()
     {

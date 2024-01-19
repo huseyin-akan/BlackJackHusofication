@@ -1,6 +1,5 @@
 ﻿using BlackJackHusofication.Helpers;
 using BlackJackHusofication.Models;
-using System.Numerics;
 
 namespace BlackJackHusofication.Managers;
 
@@ -9,15 +8,14 @@ internal class GameManager
     private int roundNo;
     private List<Card> deck;
     private List<Card> playedCards;
-    private readonly Dealer dealer;
-    private readonly List<Player> players;
-    private readonly Player husoka;
-    private Player? husokaBettedFor;
-    private readonly bool[] spots;
-    private bool husokaIsMorting = false;
-    private decimal currentHusokaBet = 0;
     private bool isShoeShouldChange = false;
     private Card? shufflerCard;
+    private readonly Dealer dealer;
+    private readonly List<Player> players;
+    private readonly bool[] spots;
+
+    private readonly Husoka husoka;
+
 
     public GameManager()
     {
@@ -27,7 +25,7 @@ internal class GameManager
         playedCards = [];
         deck = [];
         dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
-        husoka = new Player() { Id = 8, Name = "Husoka", Balance = 1_270 };
+        husoka = new Husoka() { Id =8, HusokaBettedFor = null, Balance = 1_270, Name= "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false};
 
         StartNewGame();
     }
@@ -48,18 +46,29 @@ internal class GameManager
             StartNewRound();
             AskAllPlayersForActions();
             PlayForDealer();
-            CheckHandsAndDeliverPrizes();
-            CheckForHusoka();
+            BalanceManager.CheckHandsAndDeliverPrizes(players.Where(x => x.HasBetted), dealer, husoka);
             CollectAllCards();
         }
         ReportEarnings();
     }
-
-
-
-    private void CheckForHusoka()
+    private void CreateAFulTable()
     {
-        if (!husokaIsMorting) return;
+        players.Add(new Player() { Id = 2, Name = "Player 1", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 3, Name = "Player 2", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 4, Name = "Player 3", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 5, Name = "Player 4", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 6, Name = "Player 5", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 7, Name = "Player 6", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        players.Add(new Player() { Id = 8, Name = "Player 7", Balance = 1_000_000, Spot = GivePlayerSpot() });
+    }
+
+    private int GivePlayerSpot(int spotNo = 1)
+    {
+        if (spotNo == 1) spotNo = Array.IndexOf(spots, false);
+        if (spotNo == -1) return -1;
+
+        spots[spotNo] = true;
+        return spotNo;
     }
 
     private void CollectAllCards()
@@ -76,92 +85,9 @@ internal class GameManager
         };
     }
 
-    private void CheckHandsAndDeliverPrizes()
-    {
-        Hand playerHand;
-        foreach (var player in players.Where(x => x.HasBetted))
-        {
-            decimal earning = 0;
-            playerHand = player.Hand;
+    
 
-            //TODO-HUS bir oyuncu patladığında, kasa da patlarsa beraberlik mi olur? Kasa normalde çekmez kazanır. Ama çoklu oyuncu olunca?
-            //player loses
-            if (playerHand.IsBusted)
-            {
-                ConsoleHelper.WriteLine($"Unfortunately {player.Name} has lost the round", ConsoleColor.DarkRed);
-                player.LosingStreak++;
-                player.NotWinningStreak++;
-                player.WinningStreak = 0;
-            }
-
-            //player has blackjack
-            else if (playerHand.IsBlackJack && !dealer.Hand.IsBlackJack)
-            {
-                earning = playerHand.BetAmount * 2.5M;
-                PayBackToPlayer(player, earning);
-                ConsoleHelper.WriteLine($"Yaaay!! It is a blackjack!!! {player.Name} has won {earning} TL", ConsoleColor.Green);
-                player.LosingStreak = 0;
-                player.NotWinningStreak = 0;
-                player.WinningStreak++;
-            }
-
-            //player wins
-            else if (dealer.Hand.IsBusted || playerHand.HandValue > dealer.Hand.HandValue)
-            {
-                earning = playerHand.BetAmount * 2;
-                PayBackToPlayer(player, earning);
-                ConsoleHelper.WriteLine($"Yess!! {player.Name} has won the round and won {earning} TL", ConsoleColor.Green);
-                player.LosingStreak = 0;
-                player.NotWinningStreak = 0;
-                player.WinningStreak++;
-            }
-
-            //it is a push
-            else if (dealer.Hand.HandValue == playerHand.HandValue)
-            {
-                earning = playerHand.BetAmount;
-                PayBackToPlayer(player, earning);
-                ConsoleHelper.WriteLine($"It's a push!! {player.Name} has got {earning} TL back", ConsoleColor.DarkYellow);
-                player.LosingStreak = 0;
-                player.NotWinningStreak++;
-                player.WinningStreak = 0;
-            }
-
-            //player loses
-            else if (dealer.Hand.HandValue > playerHand.HandValue)
-            {
-                ConsoleHelper.WriteLine($"Nooo!! {player.Name} has lost the round", ConsoleColor.DarkRed);
-                player.LosingStreak++;
-                player.NotWinningStreak++;
-                player.WinningStreak = 0;
-            }
-            else
-            {
-                throw new Exception("Bu durumu incelemeliyiz.");
-            }
-
-            ConsoleHelper.WriteLine($"{player.Name}'s current balance: {player.Balance}", ConsoleColor.Blue);
-            ConsoleHelper.WriteLine($"House's current balance: {dealer.Balance}", ConsoleColor.Magenta);
-        }
-    }
-
-    private void PayBackToPlayer(Player player, decimal amount)
-    {
-        player.Balance += amount;
-        dealer.Balance -= amount;
-
-        if(player == husokaBettedFor)
-        {
-            //TODO-HUS bet behind yaptığımız split yaparsa nasıl kazanıyorz?
-            var husoEarning = player.Hand.IsBlackJack ? currentHusokaBet * 2.5M : currentHusokaBet * 2;
-            husoka.Balance += husoEarning;
-            ConsoleHelper.WriteLine($"Heeeellll yeaaah!!!!! {husoka.Name} has won {husoEarning} TL. {husoka.Name}'s current balance: {husoka.Balance}", ConsoleColor.DarkCyan);
-            husokaIsMorting = false;
-            husokaBettedFor = null;
-            currentHusokaBet = 0;
-            Task.Delay(500);
-        }
-    }
+    
 
     private void PlayForDealer()
     {
@@ -279,38 +205,27 @@ internal class GameManager
             dealer.Balance += 100;
         }
 
-        if(!husokaIsMorting && players.Any(x => x.NotWinningStreak >= 5) )
+        if(!husoka.HusokaIsMorting && players.Any(x => x.NotWinningStreak >= 5) )
         {
-            husokaIsMorting = true;
-            if (currentHusokaBet == 0) currentHusokaBet = 10;
-            else currentHusokaBet *= 2;
-            husoka.Balance -= currentHusokaBet;
-            dealer.Balance -= currentHusokaBet;
-            husoka.HasBetted = true;
-            husokaBettedFor = players.First(x => x.NotWinningStreak >= 5);
+            husoka.HusokaIsMorting = true;
+            if (husoka.CurrentHusokaBet == 0) husoka.CurrentHusokaBet = 10;
+            else husoka.CurrentHusokaBet *= 2;
+            husoka.Balance -= husoka.CurrentHusokaBet;
+            dealer.Balance -= husoka.CurrentHusokaBet;
+            husoka.HusokaBettedFor = players.First(x => x.NotWinningStreak >= 5);
             ConsoleHelper.WriteLine($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
         }
 
-        else if (husokaIsMorting)
+        else if (husoka.HusokaIsMorting)
         {
-            currentHusokaBet *= 2;
-            husoka.Balance -= currentHusokaBet;
-            dealer.Balance -= currentHusokaBet;
-            husoka.HasBetted = true;
-            ConsoleHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {currentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+            husoka.CurrentHusokaBet *= 2;
+            husoka.Balance -= husoka.CurrentHusokaBet;
+            dealer.Balance -= husoka.CurrentHusokaBet;
+            ConsoleHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
         }
     }
 
-    private void CreateAFulTable()
-    {
-        players.Add(new Player() { Id = 2, Name = "Player 1", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 3, Name = "Player 2", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 4, Name = "Player 3", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 5, Name = "Player 4", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 6, Name = "Player 5", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 7, Name = "Player 6", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        players.Add(new Player() { Id = 8, Name = "Player 7", Balance = 1_000_000, Spot = GivePlayerSpot() });
-    }
+
 
     private void DealTheCards()
     {
@@ -355,14 +270,7 @@ internal class GameManager
             hand.IsBlackJack = true;
     }
 
-    private int GivePlayerSpot(int spotNo = 1)
-    {
-        if (spotNo == 1) spotNo = Array.IndexOf(spots, false);
-        if (spotNo == -1) return -1;
 
-        spots[spotNo] = true;
-        return spotNo;
-    }
 
     public void WriteAllCards()
     {

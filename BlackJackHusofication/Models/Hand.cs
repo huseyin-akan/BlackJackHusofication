@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace BlackJackHusofication.Models;
 
-namespace BlackJackHusofication.Models;
-
-internal class Hand
+public class Hand
 {
     public List<Card> Cards { get; set; }
     public bool IsBlackJack { get; set; }
