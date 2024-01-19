@@ -249,7 +249,7 @@ internal class GameManager
         dealer.Balance += hand.BetAmount;
         hand.BetAmount *= 2;
         
-        ConsoleHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Black, ConsoleColor.Red);
+        ConsoleHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Red);
         return false;
     }
 
@@ -262,6 +262,8 @@ internal class GameManager
     private void StartNewRound()
     {
         roundNo++;
+        ConsoleHelper.WriteLine($"--------------------------- ROUND - {roundNo} HAS STARTED ---------------------------", ConsoleColor.Magenta);
+        Console.WriteLine();
         AcceptTheBets();
         DealTheCards();
         WriteTableCardsForRound();
