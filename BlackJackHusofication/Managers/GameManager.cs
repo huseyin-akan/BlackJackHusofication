@@ -1,5 +1,6 @@
 ﻿using BlackJackHusofication.Helpers;
 using BlackJackHusofication.Models;
+using System.Numerics;
 
 namespace BlackJackHusofication.Managers;
 
@@ -51,7 +52,10 @@ internal class GameManager
             CheckForHusoka();
             CollectAllCards();
         }
+        ReportEarnings();
     }
+
+
 
     private void CheckForHusoka()
     {
@@ -61,7 +65,7 @@ internal class GameManager
     private void CollectAllCards()
     {
         playedCards.AddRange(dealer.Hand.Cards);
-        dealer.Hand.Cards = [];
+        dealer.Hand = new();
 
         foreach (var player in players.Where(x => x.HasBetted))
         {
@@ -153,6 +157,7 @@ internal class GameManager
             husoka.Balance += husoEarning;
             ConsoleHelper.WriteLine($"Heeeellll yeaaah!!!!! {husoka.Name} has won {husoEarning} TL. {husoka.Name}'s current balance: {husoka.Balance}", ConsoleColor.DarkCyan);
             husokaIsMorting = false;
+            husokaBettedFor = null;
             currentHusokaBet = 0;
             Task.Delay(500);
         }
@@ -240,7 +245,10 @@ internal class GameManager
     private bool ApplyDouble(Player player, Hand hand)
     {
         DealCard(hand);
+        player.Balance -= hand.BetAmount;
+        dealer.Balance += hand.BetAmount;
         hand.BetAmount *= 2;
+        
         ConsoleHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Black, ConsoleColor.Red);
         return false;
     }
@@ -279,6 +287,15 @@ internal class GameManager
             husoka.HasBetted = true;
             husokaBettedFor = players.First(x => x.NotWinningStreak >= 5);
             ConsoleHelper.WriteLine($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+        }
+
+        else if (husokaIsMorting)
+        {
+            currentHusokaBet *= 2;
+            husoka.Balance -= currentHusokaBet;
+            dealer.Balance -= currentHusokaBet;
+            husoka.HasBetted = true;
+            ConsoleHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {currentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
         }
     }
 
@@ -383,6 +400,17 @@ internal class GameManager
             WriteCard(player.Hand.Cards[0]);
             WriteCard(player.Hand.Cards[1]);
         }
+    }
+
+    private void ReportEarnings()
+    {
+        ConsoleHelper.WriteLine("-----------------------------------------------------------------------------------------", ConsoleColor.DarkCyan);
+        foreach (var player in players)
+        {
+            ConsoleHelper.WriteLine($"{player.Name} current balance is : {player.Balance}", ConsoleColor.Blue);
+        }
+        ConsoleHelper.WriteLine($"{husoka.Name} current balance is : {husoka.Balance}", ConsoleColor.DarkBlue);
+        ConsoleHelper.WriteLine($"{dealer.Name} current balance is : {dealer.Balance}", ConsoleColor.DarkCyan);
     }
 
     public static int AskForRounds()
