@@ -2,7 +2,7 @@
 
 namespace BlackJackHusofication.Managers;
 
-internal class OptimalMoveManager
+public class OptimalMoveManager
 {
     public static CardAction MakeOptimalMove(Card dealerCard, Hand playerHand, bool isSplitHand)
     {

@@ -2,7 +2,7 @@
 
 namespace BlackJackHusofication.Managers;
 
-internal class CardManager
+public class CardManager
 {
     public static int GetCountOfHand(Hand hand)
     {
