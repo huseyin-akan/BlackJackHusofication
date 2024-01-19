@@ -7,7 +7,7 @@ internal class GameManager
 {
     private int roundNo;
     private List<Card> deck;
-    private readonly List<Card> playedCards;
+    private List<Card> playedCards;
     private readonly Dealer dealer;
     private readonly List<Player> players;
     private readonly Player husoka;
@@ -15,6 +15,8 @@ internal class GameManager
     private readonly bool[] spots;
     private bool husokaIsMorting = false;
     private decimal currentHusokaBet = 0;
+    private bool isShoeShouldChange = false;
+    private Card? shufflerCard;
 
     public GameManager()
     {
@@ -186,8 +188,9 @@ internal class GameManager
             while (shouldAskForSplitHand)
             {
                 if (player.SplittedHand is null) break;
+                if (player.SplittedHand.Cards.Count == 1) DealCard(player.SplittedHand);
                 var playerAction = AskForAction(player.SplittedHand, true);
-                shouldAskForNormalHand = ApplyPlayerAction(player, player.SplittedHand, playerAction);
+                shouldAskForSplitHand = ApplyPlayerAction(player, player.SplittedHand, playerAction);
             }
 
             if (player.Hand.HandValue > 21) player.Hand.IsBusted = true;
@@ -218,7 +221,9 @@ internal class GameManager
         var splitCard = player.Hand.Cards[1];
         player.Hand.Cards.Remove(splitCard);
         player.SplittedHand.Cards.Add(splitCard);
+        
         player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
+        player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
         ConsoleHelper.WriteLine($"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
         DealCard(player.Hand);
         ConsoleHelper.WriteLine($"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
@@ -290,6 +295,15 @@ internal class GameManager
 
     private void DealTheCards()
     {
+        if (isShoeShouldChange)
+        {
+            List<Card> collectedShoe = [.. playedCards, .. deck, shufflerCard!];
+            deck = DeckHelper.ShuffleDecks(collectedShoe);
+            playedCards = [];
+            shufflerCard = null;
+            isShoeShouldChange = false;
+        }
+
         for (int i = 0; i < 2; i++)
         {
             //Deal for all players who has betted
@@ -304,10 +318,17 @@ internal class GameManager
     {
         var card = deck[0];
         deck.Remove(deck[0]);
+
+        if(card.CardType == CardType.ShufflerCard)
+        {
+            isShoeShouldChange = true;
+            shufflerCard = card with { };   //copy the card with new reference
+            card = deck[0];
+            deck.Remove(deck[0]);
+        }
+
         hand.Cards.Add(card);
         hand.HandValue = CardManager.GetCountOfHand(hand);
-
-        //TODO-HUS shuffler card gelirse.
 
         if (hand.HandValue > 21) hand.IsBusted = true;
 

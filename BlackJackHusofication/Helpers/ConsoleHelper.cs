@@ -18,7 +18,7 @@ internal class ConsoleHelper
         Console.ForegroundColor = foreColor;
         Console.BackgroundColor = backColor;
         Console.Write(message);
-        Console.ResetColor(); 
+        Console.ResetColor();
     }
 
     public static void WriteLine(string message)
@@ -39,5 +39,13 @@ internal class ConsoleHelper
         Console.BackgroundColor = backColor;
         Console.WriteLine(message);
         Console.ResetColor();
+    }
+
+    static void ClearLastConsoleLine()
+    {
+        int currentLineCursor = Console.CursorTop;
+        Console.SetCursorPosition(0, Console.CursorTop - 1);
+        Console.Write(new string(' ', Console.WindowWidth));
+        Console.SetCursorPosition(0, currentLineCursor - 1);
     }
 }
