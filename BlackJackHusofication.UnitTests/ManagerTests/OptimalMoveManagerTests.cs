@@ -26,7 +26,7 @@ public class OptimalMoveManagerTests
     [InlineData(CardValue.Queen, CardValue.King, true, CardAction.Stand)]
     [InlineData(CardValue.Ace, CardValue.Ace, false, CardAction.Split)]
     [InlineData(CardValue.Ace, CardValue.Ace, true, CardAction.Hit)]
-    public void ShouldMakeOptimalMoveForPairWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2, bool isSplitHand, CardAction expectedCardAction)
+    public void ShouldMakeOptimalMoveForPairsWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2, bool isSplitHand, CardAction expectedCardAction)
     {
         Dealer dealer = new() { Id= 0, Name="Dealer"};
         dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two) );
@@ -36,6 +36,61 @@ public class OptimalMoveManagerTests
         playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
 
         var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand, isSplitHand);
+
+        Assert.True(actualAction == expectedCardAction);
+    }
+
+    [Theory]
+    [InlineData(CardValue.Ace, CardValue.Two, CardAction.Hit)]
+    [InlineData(CardValue.Ace, CardValue.Three,CardAction.Hit)]
+    [InlineData(CardValue.Ace, CardValue.Four,CardAction.Hit)]
+    [InlineData(CardValue.Ace, CardValue.Five, CardAction.Hit)]
+    [InlineData(CardValue.Ace, CardValue.Six, CardAction.Stand)]
+    [InlineData(CardValue.Ace, CardValue.Seven, CardAction.Stand)]
+    [InlineData(CardValue.Ace, CardValue.Eight, CardAction.Stand)]
+    [InlineData(CardValue.Ace, CardValue.Nine, CardAction.Stand)]
+    public void ShouldMakeOptimalMoveForSoftHandWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2,CardAction expectedCardAction)
+    {
+        Dealer dealer = new() { Id = 0, Name = "Dealer" };
+        dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two));
+        Hand playerHand = new();
+        playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
+        playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
+        playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
+
+        var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
+
+        Assert.True(actualAction == expectedCardAction);
+    }
+
+    [Theory]
+    [InlineData(CardValue.Three, CardValue.Two, CardAction.Hit)]
+    [InlineData(CardValue.Four, CardValue.Two, CardAction.Hit)]
+    [InlineData(CardValue.Three, CardValue.Four, CardAction.Hit)]
+    [InlineData(CardValue.Three, CardValue.Five, CardAction.Hit)]
+    [InlineData(CardValue.Three, CardValue.Six, CardAction.Hit)]
+    [InlineData(CardValue.Three, CardValue.Seven, CardAction.Double)]
+    [InlineData(CardValue.Three, CardValue.Eight, CardAction.Double)]
+    [InlineData(CardValue.Jack, CardValue.Two, CardAction.Hit)]
+    [InlineData(CardValue.Ten, CardValue.Three, CardAction.Stand)]
+    [InlineData(CardValue.Queen, CardValue.Four, CardAction.Stand)]
+    [InlineData(CardValue.Jack, CardValue.Five, CardAction.Stand)]
+    [InlineData(CardValue.Ten, CardValue.Six, CardAction.Stand)]
+    [InlineData(CardValue.Queen, CardValue.Seven, CardAction.Stand)]
+    [InlineData(CardValue.King, CardValue.Eight, CardAction.Stand)]
+    [InlineData(CardValue.Jack, CardValue.Nine, CardAction.Stand)]
+    [InlineData(CardValue.Queen, CardValue.King, CardAction.Stand)]
+    [InlineData(CardValue.Jack, CardValue.Ace, CardAction.Stand)]
+    public void ShouldMakeOptimalMoveForHandWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2, CardAction expectedCardAction)
+    {
+        Dealer dealer = new() { Id = 0, Name = "Dealer" };
+        dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two));
+        Hand playerHand = new();
+        playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
+        playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
+        playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
+
+        var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
 
         Assert.True(actualAction == expectedCardAction);
     }

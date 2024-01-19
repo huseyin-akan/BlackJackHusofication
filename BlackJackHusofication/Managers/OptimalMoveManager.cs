@@ -4,7 +4,7 @@ namespace BlackJackHusofication.Managers;
 
 public class OptimalMoveManager
 {
-    public static CardAction MakeOptimalMove(Card dealerCard, Hand playerHand, bool isSplitHand)
+    public static CardAction MakeOptimalMove(Card dealerCard, Hand playerHand, bool isSplitHand = false)
     {
         var dealersCardValue = CardManager.GetCardCount(dealerCard);
         var playerHandIsPair = playerHand.Cards.Count == 2 && playerHand.Cards[0].CardValue == playerHand.Cards[1].CardValue;
