@@ -1,5 +1,8 @@
 ﻿using BlackJackHusofication.Business.Helpers;
+using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.Model.Models;
+using Microsoft.AspNetCore.SignalR;
+using System.Text;
 
 namespace BlackJackHusofication.Business.Managers;
 
@@ -16,8 +19,12 @@ public class GameManager
 
     private readonly Husoka husoka;
 
-    public GameManager()
+    private readonly IHubContext<BlackJackHub> _hubContext;
+    private readonly ILogManager _logManager;
+
+    public GameManager(IHubContext<BlackJackHub> hubContext, ILogManager logManager)
     {
+        _hubContext = hubContext;
         roundNo = 0;
         spots = new bool[8];
         players = [];
@@ -25,26 +32,26 @@ public class GameManager
         deck = [];
         dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
         husoka = new Husoka() { Id = 8, HusokaBettedFor = null, Balance = 1_270, Name = "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false };
-
-        StartNewGame();
+        _logManager = logManager;
     }
 
-    public void StartNewGame()
+    public async Task StartNewGame()
     {
-        ConsoleHelper.WriteLine("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.", ConsoleColor.DarkGreen);
+        LogHelper.WriteLine("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.", ConsoleColor.DarkGreen);
+        await _logManager.SendLogMessageToAllClients("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.");
 
         deck = DeckHelper.CreateFullDeck(8);
         DeckHelper.ShuffleDecks(deck);
         CreateAFulTable();
     }
 
-    public void PlayRounds(int roundNumber = 1)
+    public async Task PlayRounds(int roundNumber = 1)
     {
         if (roundNumber == 0) return;
 
         for (int i = 0; i < roundNumber; i++)
         {
-            StartNewRound();
+            await StartNewRound();
             AskAllPlayersForActions();
             PlayForDealer();
             BalanceManager.CheckHandsAndDeliverPrizes(players.Where(x => x.HasBetted), dealer, husoka);
@@ -93,14 +100,14 @@ public class GameManager
         if (!players.Any(x => !x.Hand.IsBusted)
             && !players.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
 
-        ConsoleHelper.WriteLine($"{dealer.Name}'s second card is: {dealer.Hand.Cards[1].CardType} - {dealer.Hand.Cards[1].CardValue}", ConsoleColor.Magenta);
-        ConsoleHelper.WriteLine($"{dealer.Name}'s current hand: {dealer.Hand.HandValue}", ConsoleColor.Magenta);
+        LogHelper.WriteLine($"{dealer.Name}'s second card is: {dealer.Hand.Cards[1].CardType} - {dealer.Hand.Cards[1].CardValue}", ConsoleColor.Magenta);
+        LogHelper.WriteLine($"{dealer.Name}'s current hand: {dealer.Hand.HandValue}", ConsoleColor.Magenta);
 
         //Otherwise dealers opens card and hits until at least 17
         while (dealer.Hand.HandValue < 17)
         {
             DealCard(dealer.Hand);
-            ConsoleHelper.WriteLine($"{dealer.Name} hits. Now the hand is : {dealer.Hand.HandValue}");
+            LogHelper.WriteLine($"{dealer.Name} hits. Now the hand is : {dealer.Hand.HandValue}");
         }
     }
 
@@ -141,7 +148,7 @@ public class GameManager
 
     private bool ApplyStand(Player player, Hand hand)
     {
-        ConsoleHelper.WriteLine($"{player.Name} stands. Now the hand is : {hand.HandValue}", ConsoleColor.DarkYellow);
+        LogHelper.WriteLine($"{player.Name} stands. Now the hand is : {hand.HandValue}", ConsoleColor.DarkYellow);
         return false;
     }
 
@@ -154,16 +161,16 @@ public class GameManager
 
         player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
         player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
-        ConsoleHelper.WriteLine($"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
+        LogHelper.WriteLine($"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
         DealCard(player.Hand);
-        ConsoleHelper.WriteLine($"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
+        LogHelper.WriteLine($"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
         return true;
     }
 
     private bool ApplyHit(Player player, Hand hand)
     {
         DealCard(hand);
-        ConsoleHelper.WriteLine($"{player.Name} hits. Now the hand is : {hand.HandValue}", ConsoleColor.DarkCyan);
+        LogHelper.WriteLine($"{player.Name} hits. Now the hand is : {hand.HandValue}", ConsoleColor.DarkCyan);
         return hand.HandValue < 21;
     }
 
@@ -174,7 +181,7 @@ public class GameManager
         dealer.Balance += hand.BetAmount;
         hand.BetAmount *= 2;
 
-        ConsoleHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Red);
+        LogHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Red);
         return false;
     }
 
@@ -184,17 +191,18 @@ public class GameManager
         return OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], hand, isSplitHand);
     }
 
-    private void StartNewRound()
+    private async Task StartNewRound()
     {
         roundNo++;
-        ConsoleHelper.WriteLine($"--------------------------- ROUND - {roundNo} HAS STARTED ---------------------------", ConsoleColor.Magenta);
+        LogHelper.WriteLine($"--------------------------- ROUND - {roundNo} HAS STARTED ---------------------------", ConsoleColor.Magenta);
         Console.WriteLine();
-        AcceptTheBets();
+        await _logManager.SendLogMessageToAllClients($"---------------------------ROUND - { roundNo} HAS STARTED ---------------------------");
+        await AcceptTheBets();
         DealTheCards();
         WriteTableCardsForRound();
     }
 
-    private void AcceptTheBets()
+    private async Task AcceptTheBets()
     {
         foreach (var player in players.Where(x => x.Spot > 0))
         {
@@ -212,7 +220,8 @@ public class GameManager
             husoka.Balance -= husoka.CurrentHusokaBet;
             dealer.Balance -= husoka.CurrentHusokaBet;
             husoka.HusokaBettedFor = players.First(x => x.NotWinningStreak >= 5);
-            ConsoleHelper.WriteLine($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+            LogHelper.WriteLine($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+            await _logManager.SendLogMessageToAllClients($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}");
         }
 
         else if (husoka.HusokaIsMorting)
@@ -220,7 +229,8 @@ public class GameManager
             husoka.CurrentHusokaBet *= 2;
             husoka.Balance -= husoka.CurrentHusokaBet;
             dealer.Balance -= husoka.CurrentHusokaBet;
-            ConsoleHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+            LogHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
+            await _logManager.SendLogMessageToAllClients($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}");
         }
     }
 
@@ -278,7 +288,7 @@ public class GameManager
         Console.WriteLine(counter);
     }
 
-    public static void WriteCard(Card card)
+    public async Task WriteCard(Card card)
     {
         ConsoleColor color = card.CardType switch
         {
@@ -288,20 +298,22 @@ public class GameManager
             _ => throw new NotImplementedException("Unhandled CardType"),
         };
 
-        ConsoleHelper.Write(card.CardValue.ToString(), color);
-        ConsoleHelper.Write(" - ");
-        ConsoleHelper.Write(card.CardType.ToString(), color);
+        LogHelper.Write(card.CardValue.ToString(), color);
+        LogHelper.Write(" - ");
+        LogHelper.Write(card.CardType.ToString(), color);
+        await _logManager.SendLogMessageToAllClients(card.CardValue.ToString());
+        await _logManager.SendLogMessageToAllClients(card.CardType.ToString());
         Console.WriteLine();
     }
 
     public void WriteTableCardsForRound()
     {
-        ConsoleHelper.WriteLine("Dealer has :", ConsoleColor.DarkCyan);
+        LogHelper.WriteLine("Dealer has :", ConsoleColor.DarkCyan);
         WriteCard(dealer.Hand.Cards[0]);
 
         foreach (var player in players.Where(x => x.HasBetted))
         {
-            ConsoleHelper.WriteLine(player.Name + " has :", ConsoleColor.Blue);
+            LogHelper.WriteLine(player.Name + " has :", ConsoleColor.Blue);
             WriteCard(player.Hand.Cards[0]);
             WriteCard(player.Hand.Cards[1]);
         }
@@ -309,13 +321,13 @@ public class GameManager
 
     private void ReportEarnings()
     {
-        ConsoleHelper.WriteLine("-----------------------------------------------------------------------------------------", ConsoleColor.DarkCyan);
+        LogHelper.WriteLine("-----------------------------------------------------------------------------------------", ConsoleColor.DarkCyan);
         foreach (var player in players)
         {
-            ConsoleHelper.WriteLine($"{player.Name} current balance is : {player.Balance}", ConsoleColor.Blue);
+            LogHelper.WriteLine($"{player.Name} current balance is : {player.Balance}", ConsoleColor.Blue);
         }
-        ConsoleHelper.WriteLine($"{husoka.Name} current balance is : {husoka.Balance}", ConsoleColor.DarkBlue);
-        ConsoleHelper.WriteLine($"{dealer.Name} current balance is : {dealer.Balance}", ConsoleColor.DarkCyan);
+        LogHelper.WriteLine($"{husoka.Name} current balance is : {husoka.Balance}", ConsoleColor.DarkBlue);
+        LogHelper.WriteLine($"{dealer.Name} current balance is : {dealer.Balance}", ConsoleColor.DarkCyan);
     }
 
     public static int AskForRounds()

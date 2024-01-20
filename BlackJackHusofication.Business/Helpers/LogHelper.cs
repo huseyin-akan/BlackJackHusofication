@@ -1,6 +1,6 @@
 ﻿namespace BlackJackHusofication.Business.Helpers;
 
-internal class ConsoleHelper
+internal class LogHelper
 {
     public static void Write(string message)
     {
@@ -40,13 +40,5 @@ internal class ConsoleHelper
         Console.BackgroundColor = backColor;
         Console.WriteLine(message);
         Console.ResetColor();
-    }
-
-    static void ClearLastConsoleLine()
-    {
-        int currentLineCursor = Console.CursorTop;
-        Console.SetCursorPosition(0, Console.CursorTop - 1);
-        Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, currentLineCursor - 1);
     }
 }

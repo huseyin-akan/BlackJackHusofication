@@ -17,7 +17,7 @@ internal class BalanceManager
             //player loses
             if (playerHand.IsBusted)
             {
-                ConsoleHelper.WriteLine($"Unfortunately {player.Name} has lost the round", ConsoleColor.DarkRed);
+                LogHelper.WriteLine($"Unfortunately {player.Name} has lost the round", ConsoleColor.DarkRed);
                 player.LosingStreak++;
                 player.NotWinningStreak++;
                 player.WinningStreak = 0;
@@ -28,7 +28,7 @@ internal class BalanceManager
             {
                 earning = playerHand.BetAmount * 2.5M;
                 PayBackToPlayer(player, dealer, earning, husoka);
-                ConsoleHelper.WriteLine($"Yaaay!! It is a blackjack!!! {player.Name} has won {earning} TL", ConsoleColor.Green);
+                LogHelper.WriteLine($"Yaaay!! It is a blackjack!!! {player.Name} has won {earning} TL", ConsoleColor.Green);
                 player.LosingStreak = 0;
                 player.NotWinningStreak = 0;
                 player.WinningStreak++;
@@ -39,7 +39,7 @@ internal class BalanceManager
             {
                 earning = playerHand.BetAmount * 2;
                 PayBackToPlayer(player, dealer, earning, husoka);
-                ConsoleHelper.WriteLine($"Yess!! {player.Name} has won the round and won {earning} TL", ConsoleColor.Green);
+                LogHelper.WriteLine($"Yess!! {player.Name} has won the round and won {earning} TL", ConsoleColor.Green);
                 player.LosingStreak = 0;
                 player.NotWinningStreak = 0;
                 player.WinningStreak++;
@@ -50,7 +50,7 @@ internal class BalanceManager
             {
                 earning = playerHand.BetAmount;
                 PayBackToPlayer(player, dealer, earning, husoka);
-                ConsoleHelper.WriteLine($"It's a push!! {player.Name} has got {earning} TL back", ConsoleColor.DarkYellow);
+                LogHelper.WriteLine($"It's a push!! {player.Name} has got {earning} TL back", ConsoleColor.DarkYellow);
                 player.LosingStreak = 0;
                 player.NotWinningStreak++;
                 player.WinningStreak = 0;
@@ -59,7 +59,7 @@ internal class BalanceManager
             //player loses
             else if (dealer.Hand.HandValue > playerHand.HandValue)
             {
-                ConsoleHelper.WriteLine($"Nooo!! {player.Name} has lost the round", ConsoleColor.DarkRed);
+                LogHelper.WriteLine($"Nooo!! {player.Name} has lost the round", ConsoleColor.DarkRed);
                 player.LosingStreak++;
                 player.NotWinningStreak++;
                 player.WinningStreak = 0;
@@ -69,8 +69,8 @@ internal class BalanceManager
                 throw new Exception("Bu durumu incelemeliyiz.");
             }
 
-            ConsoleHelper.WriteLine($"{player.Name}'s current balance: {player.Balance}", ConsoleColor.Blue);
-            ConsoleHelper.WriteLine($"House's current balance: {dealer.Balance}", ConsoleColor.Magenta);
+            LogHelper.WriteLine($"{player.Name}'s current balance: {player.Balance}", ConsoleColor.Blue);
+            LogHelper.WriteLine($"House's current balance: {dealer.Balance}", ConsoleColor.Magenta);
         }
 
     }
@@ -84,7 +84,7 @@ internal class BalanceManager
             //TODO-HUS bet behind yaptığımız split yaparsa nasıl kazanıyorz?
             var husoEarning = player.Hand.IsBlackJack ? husoka.CurrentHusokaBet * 2.5M : husoka.CurrentHusokaBet * 2;
             husoka.Balance += husoEarning;
-            ConsoleHelper.WriteLine($"Heeeellll yeaaah!!!!! {husoka.Name} has won {husoEarning} TL. {husoka.Name}'s current balance: {husoka.Balance}", ConsoleColor.DarkCyan);
+            LogHelper.WriteLine($"Heeeellll yeaaah!!!!! {husoka.Name} has won {husoEarning} TL. {husoka.Name}'s current balance: {husoka.Balance}", ConsoleColor.DarkCyan);
             husoka.HusokaIsMorting = false;
             husoka.HusokaBettedFor = null;
             husoka.CurrentHusokaBet = 0;

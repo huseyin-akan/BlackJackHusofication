@@ -1,6 +1,6 @@
 ﻿using BlackJackHusofication.Business.Managers;
 
-GameManager gameManager = new();
+GameManager gameManager = new(null, null);
 gameManager.StartNewGame();
 
 bool isExitGame = false;

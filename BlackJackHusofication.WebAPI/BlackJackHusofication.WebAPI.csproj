@@ -12,7 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\BlackJackHusofication.Business\BlackJackHusofication.Business.csproj" />
+    <ProjectReference Include="..\BlackJackHusofication.Model\BlackJackHusofication.Model.csproj" />
   </ItemGroup>
 
 </Project>
