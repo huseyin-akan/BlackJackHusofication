@@ -1,4 +1,6 @@
 using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Business.Services.Abstracts;
+using BlackJackHusofication.Business.Services.Concretes;
 using BlackJackHusofication.Business.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +19,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSignalR();
 
-builder.Services.AddScoped<GameManager>();
-builder.Services.AddScoped<ILogManager, LoggerManager>();
+builder.Services.AddSingleton<BjSimulationManager>();
+builder.Services.AddSingleton<IGameLogger, SimulationLogsService>();
 
 var app = builder.Build();
 

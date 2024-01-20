@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { SimulationLog } from '../models/log-models/simulationLogs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { Subject } from 'rxjs';
 export class SignalRService {
   private hubConnection: signalR.HubConnection;
 
-  private logSubject = new Subject<string>();
+  private logSubject = new Subject<SimulationLog>();
 
   log$ = this.logSubject.asObservable();
 
@@ -19,8 +20,9 @@ export class SignalRService {
 
     this.hubConnection.start().catch(err => console.error(err));
 
-    this.hubConnection.on('SendLog', (log: string) => {
+    this.hubConnection.on('SendLog', (log: SimulationLog) => {
       this.logSubject.next(log);
+      console.log(log);
     });
   }
 

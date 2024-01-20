@@ -1,24 +1,26 @@
 import { FormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 import { SignalRService } from '../../services/signalRService';
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
+import { SimulationLog, SimulationLogType } from '../../models/log-models/simulationLogs';
 
 @Component({
   selector: 'app-bj',
   standalone: true,
-  imports: [FormsModule, NgFor],
+  imports: [FormsModule, NgFor, NgIf],
   templateUrl: './bj.component.html',
   styleUrl: './bj.component.css'
 })
 export class BjComponent {
-  logs: string[] = [];
+  logs: SimulationLog[] = [];
   betAmount;
 
   constructor(private signalRService: SignalRService) {}
 
   ngOnInit(): void {
     this.signalRService.log$.subscribe(log => {
-      console.log("I work mazafaka")
+      console.log('here in ts', log)
+      console.log('and message is : ', log.message)
       this.logs.push(log);
     });
   }

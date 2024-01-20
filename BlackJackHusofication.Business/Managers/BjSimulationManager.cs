@@ -1,12 +1,12 @@
 ﻿using BlackJackHusofication.Business.Helpers;
-using BlackJackHusofication.Business.SignalR;
+using BlackJackHusofication.Business.Services.Abstracts;
+using BlackJackHusofication.Model.Logs;
 using BlackJackHusofication.Model.Models;
-using Microsoft.AspNetCore.SignalR;
-using System.Text;
 
 namespace BlackJackHusofication.Business.Managers;
 
-public class GameManager
+//Note: in this mode, 7 players play the most optimal moves. And Husoka bets behind.
+public class BjSimulationManager  : IGameManager
 {
     private int roundNo;
     private List<Card> deck;
@@ -16,15 +16,12 @@ public class GameManager
     private readonly Dealer dealer;
     private readonly List<Player> players;
     private readonly bool[] spots;
-
     private readonly Husoka husoka;
 
-    private readonly IHubContext<BlackJackHub> _hubContext;
-    private readonly ILogManager _logManager;
+    private readonly IGameLogger _loggerService;
 
-    public GameManager(IHubContext<BlackJackHub> hubContext, ILogManager logManager)
+    public BjSimulationManager(IGameLogger loggerService)
     {
-        _hubContext = hubContext;
         roundNo = 0;
         spots = new bool[8];
         players = [];
@@ -32,13 +29,13 @@ public class GameManager
         deck = [];
         dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
         husoka = new Husoka() { Id = 8, HusokaBettedFor = null, Balance = 1_270, Name = "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false };
-        _logManager = logManager;
+        _loggerService = loggerService;
     }
 
     public async Task StartNewGame()
     {
-        LogHelper.WriteLine("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.", ConsoleColor.DarkGreen);
-        await _logManager.SendLogMessageToAllClients("BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim.");
+        SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = "BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim." };
+        await _loggerService.LogMessage(log);
 
         deck = DeckHelper.CreateFullDeck(8);
         DeckHelper.ShuffleDecks(deck);
@@ -94,24 +91,28 @@ public class GameManager
         };
     }
 
-    private void PlayForDealer()
+    private async Task PlayForDealer()
     {
         //If everyone is busted, dealer wins. 
         if (!players.Any(x => !x.Hand.IsBusted)
             && !players.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
 
-        LogHelper.WriteLine($"{dealer.Name}'s second card is: {dealer.Hand.Cards[1].CardType} - {dealer.Hand.Cards[1].CardValue}", ConsoleColor.Magenta);
-        LogHelper.WriteLine($"{dealer.Name}'s current hand: {dealer.Hand.HandValue}", ConsoleColor.Magenta);
+        SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = $"{dealer.Name}'s second card is: {dealer.Hand.Cards[1].CardType} - {dealer.Hand.Cards[1].CardValue}" };
+        await _loggerService.LogMessage(log);
+
+        SimulationLog log2 = new() { LogType = SimulationLogType.GameLog, Message = $"{dealer.Name}'s current hand: {dealer.Hand.HandValue}" };
+        await _loggerService.LogMessage(log2);
 
         //Otherwise dealers opens card and hits until at least 17
         while (dealer.Hand.HandValue < 17)
         {
             DealCard(dealer.Hand);
-            LogHelper.WriteLine($"{dealer.Name} hits. Now the hand is : {dealer.Hand.HandValue}");
+            SimulationLog log3 = new() { LogType = SimulationLogType.DealerActions, Message = $"{dealer.Name} hits. Now the hand is : {dealer.Hand.HandValue}" };
+            await _loggerService.LogMessage(log3);
         }
     }
 
-    private void AskAllPlayersForActions()
+    private async Task AskAllPlayersForActions()
     {
         foreach (var player in players.Where(x => x.HasBetted))
         {
@@ -119,7 +120,7 @@ public class GameManager
             while (shouldAskForNormalHand)
             {
                 var playerAction = AskForAction(player.Hand);
-                shouldAskForNormalHand = ApplyPlayerAction(player, player.Hand, playerAction);
+                shouldAskForNormalHand = await ApplyPlayerAction(player, player.Hand, playerAction);
             }
             var shouldAskForSplitHand = true;
             while (shouldAskForSplitHand)
@@ -127,32 +128,33 @@ public class GameManager
                 if (player.SplittedHand is null) break;
                 if (player.SplittedHand.Cards.Count == 1) DealCard(player.SplittedHand);
                 var playerAction = AskForAction(player.SplittedHand, true);
-                shouldAskForSplitHand = ApplyPlayerAction(player, player.SplittedHand, playerAction);
+                shouldAskForSplitHand = await ApplyPlayerAction(player, player.SplittedHand, playerAction);
             }
 
             if (player.Hand.HandValue > 21) player.Hand.IsBusted = true;
         }
     }
 
-    private bool ApplyPlayerAction(Player player, Hand hand, CardAction playerAction)
+    private async Task<bool> ApplyPlayerAction(Player player, Hand hand, CardAction playerAction)
     {
         return playerAction switch
         {
-            CardAction.Stand => ApplyStand(player, hand),
-            CardAction.Hit => ApplyHit(player, hand),
-            CardAction.Double => ApplyDouble(player, hand),
-            CardAction.Split => ApplySplit(player),
+            CardAction.Stand => await ApplyStand(player, hand),
+            CardAction.Hit => await ApplyHit(player, hand),
+            CardAction.Double => await ApplyDouble(player, hand),
+            CardAction.Split => await ApplySplit(player),
             _ => throw new Exception("La nasıl olur bu!!!")
         };
     }
 
-    private bool ApplyStand(Player player, Hand hand)
+    private async Task<bool> ApplyStand(Player player, Hand hand)
     {
-        LogHelper.WriteLine($"{player.Name} stands. Now the hand is : {hand.HandValue}", ConsoleColor.DarkYellow);
+        SimulationLog log3 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} stands. Now the hand is : {hand.HandValue}" };
+        await _loggerService.LogMessage(log3);
         return false;
     }
 
-    private bool ApplySplit(Player player)
+    private async Task<bool> ApplySplit(Player player)
     {
         player.SplittedHand = new Hand();
         var splitCard = player.Hand.Cards[1];
@@ -161,27 +163,31 @@ public class GameManager
 
         player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
         player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
-        LogHelper.WriteLine($"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
+        SimulationLog log = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}" };
+        await _loggerService.LogMessage(log);
         DealCard(player.Hand);
-        LogHelper.WriteLine($"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
+        SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}" };
+        await _loggerService.LogMessage(log2);
         return true;
     }
 
-    private bool ApplyHit(Player player, Hand hand)
+    private async Task<bool> ApplyHit(Player player, Hand hand)
     {
         DealCard(hand);
-        LogHelper.WriteLine($"{player.Name} hits. Now the hand is : {hand.HandValue}", ConsoleColor.DarkCyan);
+        SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} hits. Now the hand is : {hand.HandValue}" };
+        await _loggerService.LogMessage(log2);
         return hand.HandValue < 21;
     }
 
-    private bool ApplyDouble(Player player, Hand hand)
+    private async Task<bool> ApplyDouble(Player player, Hand hand)
     {
         DealCard(hand);
         player.Balance -= hand.BetAmount;
         dealer.Balance += hand.BetAmount;
         hand.BetAmount *= 2;
 
-        LogHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Red);
+        SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} doubles. Now the hand is : {hand.HandValue}" };
+        await _loggerService.LogMessage(log2);
         return false;
     }
 
@@ -194,9 +200,8 @@ public class GameManager
     private async Task StartNewRound()
     {
         roundNo++;
-        LogHelper.WriteLine($"--------------------------- ROUND - {roundNo} HAS STARTED ---------------------------", ConsoleColor.Magenta);
-        Console.WriteLine();
-        await _logManager.SendLogMessageToAllClients($"---------------------------ROUND - { roundNo} HAS STARTED ---------------------------");
+        SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = $"--------------------------- ROUND - {roundNo} HAS STARTED ---------------------------" };
+        await _loggerService.LogMessage(log);
         await AcceptTheBets();
         DealTheCards();
         WriteTableCardsForRound();
@@ -220,8 +225,8 @@ public class GameManager
             husoka.Balance -= husoka.CurrentHusokaBet;
             dealer.Balance -= husoka.CurrentHusokaBet;
             husoka.HusokaBettedFor = players.First(x => x.NotWinningStreak >= 5);
-            LogHelper.WriteLine($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
-            await _logManager.SendLogMessageToAllClients($"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}");
+            SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = $"{husoka.Name}'s morting. Let's gooo!. Our balance is : {husoka.Balance}" };
+            await _loggerService.LogMessage(log);
         }
 
         else if (husoka.HusokaIsMorting)
@@ -229,8 +234,8 @@ public class GameManager
             husoka.CurrentHusokaBet *= 2;
             husoka.Balance -= husoka.CurrentHusokaBet;
             dealer.Balance -= husoka.CurrentHusokaBet;
-            LogHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
-            await _logManager.SendLogMessageToAllClients($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}");
+            SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = $"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}" };
+            await _loggerService.LogMessage(log);
         }
     }
 
@@ -277,13 +282,13 @@ public class GameManager
             hand.IsBlackJack = true;
     }
 
-    public void WriteAllCards()
+    public async Task WriteAllCards()
     {
         var counter = 0;
         foreach (var card in deck)
         {
             counter++;
-            WriteCard(card);
+            await WriteCard(card);
         }
         Console.WriteLine(counter);
     }
@@ -298,36 +303,41 @@ public class GameManager
             _ => throw new NotImplementedException("Unhandled CardType"),
         };
 
-        LogHelper.Write(card.CardValue.ToString(), color);
-        LogHelper.Write(" - ");
-        LogHelper.Write(card.CardType.ToString(), color);
-        await _logManager.SendLogMessageToAllClients(card.CardValue.ToString());
-        await _logManager.SendLogMessageToAllClients(card.CardType.ToString());
+        SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = card.CardValue.ToString() };
+        SimulationLog log2 = new() { LogType = SimulationLogType.CardDealLog, Message = card.CardType.ToString() };
+        await _loggerService.LogMessage(log);
+        await _loggerService.LogMessage(log2);
         Console.WriteLine();
     }
 
-    public void WriteTableCardsForRound()
+    public async Task WriteTableCardsForRound()
     {
-        LogHelper.WriteLine("Dealer has :", ConsoleColor.DarkCyan);
-        WriteCard(dealer.Hand.Cards[0]);
+        SimulationLog log = new() { LogType = SimulationLogType.DealerActions, Message = "Dealer has :" };
+        await _loggerService.LogMessage(log);
+        await WriteCard(dealer.Hand.Cards[0]);
 
         foreach (var player in players.Where(x => x.HasBetted))
         {
-            LogHelper.WriteLine(player.Name + " has :", ConsoleColor.Blue);
-            WriteCard(player.Hand.Cards[0]);
-            WriteCard(player.Hand.Cards[1]);
+            SimulationLog log2 = new() { LogType = SimulationLogType.CardDealLog, Message = player.Name + " has :" };
+            await _loggerService.LogMessage(log2);
+            await WriteCard(player.Hand.Cards[0]);
+            await WriteCard(player.Hand.Cards[1]);
         }
     }
 
-    private void ReportEarnings()
+    private async Task ReportEarnings()
     {
-        LogHelper.WriteLine("-----------------------------------------------------------------------------------------", ConsoleColor.DarkCyan);
+        SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = "-----------------------------------------------------------------------------------------" };
+        await _loggerService.LogMessage(log);
         foreach (var player in players)
         {
-            LogHelper.WriteLine($"{player.Name} current balance is : {player.Balance}", ConsoleColor.Blue);
+            SimulationLog log2 = new() { LogType = SimulationLogType.BalanceLog, Message = $"{player.Name} current balance is : {player.Balance}" };
+            await _loggerService.LogMessage(log2);
         }
-        LogHelper.WriteLine($"{husoka.Name} current balance is : {husoka.Balance}", ConsoleColor.DarkBlue);
-        LogHelper.WriteLine($"{dealer.Name} current balance is : {dealer.Balance}", ConsoleColor.DarkCyan);
+        SimulationLog log3 = new() { LogType = SimulationLogType.HusokaLog, Message = $"{husoka.Name} current balance is : {husoka.Balance}" };
+        await _loggerService.LogMessage(log3);
+        SimulationLog log4 = new() { LogType = SimulationLogType.DealerActions, Message = $"{dealer.Name} current balance is : {dealer.Balance}" };
+        await _loggerService.LogMessage(log4);
     }
 
     public static int AskForRounds()

@@ -1,25 +1,23 @@
 ﻿using BlackJackHusofication.Business.Managers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlackJackHusofication.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GameController : ControllerBase
+    public class GameController(BjSimulationManager gameManager) : ControllerBase
     {
-        private readonly GameManager _gameManager;
-
-        public GameController(GameManager gameManager)
-        {
-            _gameManager = gameManager;
-        }
-
         [HttpGet]
         public async Task<IActionResult> StartGame([FromQuery] int roundCount)
         {
-            await _gameManager.StartNewGame();
-            await _gameManager.PlayRounds(roundCount);
+            await gameManager.StartNewGame();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PlayRounds([FromQuery] int roundCount)
+        {
+            await gameManager.PlayRounds(roundCount);
             return Ok();
         }
     }

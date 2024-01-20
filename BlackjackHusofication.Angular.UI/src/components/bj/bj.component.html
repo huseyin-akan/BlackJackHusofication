@@ -18,6 +18,13 @@
   <div>
     <h3>Logs:</h3>
     <ul>
-      <li *ngFor="let log of logs">{{ log }}</li>
+        <div *ngFor="let log of logs">
+            <li style="color: red" *ngIf="log.logType == 1">{{ log.message }}</li>
+            <li style="color: blue" *ngIf="log.logType == 2">{{ log.message }}</li>
+            <li style="color: azure" *ngIf="log.logType == 3">{{ log.message }}</li>
+            <li style="color: green" *ngIf="log.logType == 4">{{ log.message }}</li>
+            <li style="color: greenyellow" *ngIf="log.logType == 5">{{ log.message }}</li>
+            <li style="color: salmon" *ngIf="log.logType == 6">{{ log.message }}</li>
+        </div>
     </ul>
   </div>
