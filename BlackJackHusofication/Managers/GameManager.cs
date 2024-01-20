@@ -16,7 +16,6 @@ internal class GameManager
 
     private readonly Husoka husoka;
 
-
     public GameManager()
     {
         roundNo = 0;
@@ -41,6 +40,8 @@ internal class GameManager
 
     public void PlayRounds(int roundNumber = 1)
     {
+        if (roundNumber == 0) return;
+
         for (int i = 0; i < roundNumber; i++)
         {
             StartNewRound();
@@ -51,6 +52,7 @@ internal class GameManager
         }
         ReportEarnings();
     }
+
     private void CreateAFulTable()
     {
         players.Add(new Player() { Id = 2, Name = "Player 1", Balance = 1_000_000, Spot = GivePlayerSpot() });

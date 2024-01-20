@@ -1,6 +1,11 @@
 ﻿using BlackJackHusofication.Managers;
 
 GameManager game = new();
-var roundsToPlay = GameManager.AskForRounds();
 
-game.PlayRounds(roundsToPlay);
+bool isExitGame = false;
+while (!isExitGame)
+{
+    var roundsToPlay = GameManager.AskForRounds();
+    if(roundsToPlay == 0) isExitGame = true;
+    game.PlayRounds(roundsToPlay);
+}
