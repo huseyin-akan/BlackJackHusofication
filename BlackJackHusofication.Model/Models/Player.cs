@@ -1,4 +1,4 @@
-﻿namespace BlackJackHusofication.Models;
+﻿namespace BlackJackHusofication.Model.Models;
 
 public class Player
 {
@@ -15,6 +15,6 @@ public class Player
     public int WinningStreak { get; set; }
     public bool HasBetted { get; set; }
 
-    public Hand Hand {get; set;}
-    public Hand? SplittedHand {get; set;}
+    public Hand Hand { get; set; }
+    public Hand? SplittedHand { get; set; }
 }

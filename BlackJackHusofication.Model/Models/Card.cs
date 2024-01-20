@@ -1,4 +1,4 @@
-﻿namespace BlackJackHusofication.Models;
+﻿namespace BlackJackHusofication.Model.Models;
 
 public record Card(CardType CardType, CardValue CardValue);
 

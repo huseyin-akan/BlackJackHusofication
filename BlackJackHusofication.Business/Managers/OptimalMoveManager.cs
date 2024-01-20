@@ -1,6 +1,6 @@
-﻿using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Managers;
+namespace BlackJackHusofication.Business.Managers;
 
 public class OptimalMoveManager
 {

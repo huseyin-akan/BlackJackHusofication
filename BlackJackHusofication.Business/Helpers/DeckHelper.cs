@@ -1,6 +1,6 @@
-﻿using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Helpers;
+namespace BlackJackHusofication.Business.Helpers;
 
 class DeckHelper
 {
@@ -45,7 +45,7 @@ class DeckHelper
 
         //We add the shuffler card somewhere in the half
         var deckCount = cards.Count / 52;
-        var somewhereInTheHalf = (cards.Count / 2) + (deckCount * 4) - random.Next(deckCount * 8);
+        var somewhereInTheHalf = cards.Count / 2 + deckCount * 4 - random.Next(deckCount * 8);
         cards.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard));
         (cards[^1], cards[somewhereInTheHalf]) = (cards[somewhereInTheHalf], cards[^1]);
 

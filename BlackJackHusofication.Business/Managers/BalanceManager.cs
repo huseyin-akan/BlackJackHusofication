@@ -1,7 +1,7 @@
-﻿using BlackJackHusofication.Helpers;
-using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Business.Helpers;
+using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Managers;
+namespace BlackJackHusofication.Business.Managers;
 
 internal class BalanceManager
 {

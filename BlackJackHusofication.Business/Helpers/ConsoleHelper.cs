@@ -1,8 +1,9 @@
-﻿namespace BlackJackHusofication.Helpers;
+﻿namespace BlackJackHusofication.Business.Helpers;
 
 internal class ConsoleHelper
 {
-    public static void Write(string message){
+    public static void Write(string message)
+    {
         Console.Write(message);
     }
 
@@ -10,7 +11,7 @@ internal class ConsoleHelper
     {
         Console.ForegroundColor = foreColor;
         Console.Write(message);
-        Console.ResetColor(); 
+        Console.ResetColor();
     }
 
     public static void Write(string message, ConsoleColor foreColor, ConsoleColor backColor)

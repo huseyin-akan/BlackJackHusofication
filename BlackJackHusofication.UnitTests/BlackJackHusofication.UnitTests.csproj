@@ -27,7 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlackJackHusofication\BlackJackHusofication.csproj" />
+    <ProjectReference Include="..\BlackJackHusofication.Business\BlackJackHusofication.Business.csproj" />
+    <ProjectReference Include="..\BlackJackHusofication.Model\BlackJackHusofication.Model.csproj" />
   </ItemGroup>
 
 </Project>

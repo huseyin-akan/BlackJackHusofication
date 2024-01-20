@@ -1,4 +1,4 @@
-﻿namespace BlackJackHusofication.Models;
+﻿namespace BlackJackHusofication.Model.Models;
 
 //internal record Husoka(int Id, Player? HusokaBettedFor, bool HusokaIsMorting, decimal CurrentHusokaBet, string Name, decimal Balance);
 

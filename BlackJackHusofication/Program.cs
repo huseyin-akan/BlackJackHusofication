@@ -1,11 +1,11 @@
-﻿using BlackJackHusofication.Managers;
+﻿//using BlackJackHusofication.Managers;
 
-GameManager game = new();
+//GameManager game = new();
 
-bool isExitGame = false;
-while (!isExitGame)
-{
-    var roundsToPlay = GameManager.AskForRounds();
-    if(roundsToPlay == 0) isExitGame = true;
-    game.PlayRounds(roundsToPlay);
-}
+//bool isExitGame = false;
+//while (!isExitGame)
+//{
+//    var roundsToPlay = GameManager.AskForRounds();
+//    if(roundsToPlay == 0) isExitGame = true;
+//    game.PlayRounds(roundsToPlay);
+//}

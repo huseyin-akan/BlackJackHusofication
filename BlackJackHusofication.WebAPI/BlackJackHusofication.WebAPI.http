@@ -1,0 +1,6 @@
+@BlackJackHusofication.WebAPI_HostAddress = http://localhost:5096
+
+GET {{BlackJackHusofication.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

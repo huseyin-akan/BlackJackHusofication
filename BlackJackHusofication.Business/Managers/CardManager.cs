@@ -1,6 +1,6 @@
-﻿using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Managers;
+namespace BlackJackHusofication.Business.Managers;
 
 public class CardManager
 {
@@ -11,10 +11,11 @@ public class CardManager
         {
             result += GetCardCount(card);
         }
-        if (CheckIfHandIsSoft(hand, result)) {
+        if (CheckIfHandIsSoft(hand, result))
+        {
             result += 10; //then count ace as 11
             hand.IsSoft = true;
-        } 
+        }
         return result;
     }
 
@@ -31,7 +32,7 @@ public class CardManager
             CardValue.Seven => 7,
             CardValue.Eight => 8,
             CardValue.Nine => 9,
-            CardValue.Ten or CardValue.Jack or CardValue.Queen or CardValue.King=> 10,
+            CardValue.Ten or CardValue.Jack or CardValue.Queen or CardValue.King => 10,
             _ => throw new Exception("Böyle bir kart değeri yok.")
         };
     }

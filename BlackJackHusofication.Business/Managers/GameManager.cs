@@ -1,9 +1,9 @@
-﻿using BlackJackHusofication.Helpers;
-using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Business.Helpers;
+using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Managers;
+namespace BlackJackHusofication.Business.Managers;
 
-internal class GameManager
+public class GameManager
 {
     private int roundNo;
     private List<Card> deck;
@@ -24,7 +24,7 @@ internal class GameManager
         playedCards = [];
         deck = [];
         dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0, Spot = GivePlayerSpot(0) };
-        husoka = new Husoka() { Id =8, HusokaBettedFor = null, Balance = 1_270, Name= "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false};
+        husoka = new Husoka() { Id = 8, HusokaBettedFor = null, Balance = 1_270, Name = "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false };
 
         StartNewGame();
     }
@@ -87,10 +87,6 @@ internal class GameManager
         };
     }
 
-    
-
-    
-
     private void PlayForDealer()
     {
         //If everyone is busted, dealer wins. 
@@ -101,10 +97,11 @@ internal class GameManager
         ConsoleHelper.WriteLine($"{dealer.Name}'s current hand: {dealer.Hand.HandValue}", ConsoleColor.Magenta);
 
         //Otherwise dealers opens card and hits until at least 17
-        while (dealer.Hand.HandValue < 17) {
+        while (dealer.Hand.HandValue < 17)
+        {
             DealCard(dealer.Hand);
             ConsoleHelper.WriteLine($"{dealer.Name} hits. Now the hand is : {dealer.Hand.HandValue}");
-        } 
+        }
     }
 
     private void AskAllPlayersForActions()
@@ -154,7 +151,7 @@ internal class GameManager
         var splitCard = player.Hand.Cards[1];
         player.Hand.Cards.Remove(splitCard);
         player.SplittedHand.Cards.Add(splitCard);
-        
+
         player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
         player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
         ConsoleHelper.WriteLine($"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}", ConsoleColor.Black, ConsoleColor.Cyan);
@@ -167,7 +164,7 @@ internal class GameManager
     {
         DealCard(hand);
         ConsoleHelper.WriteLine($"{player.Name} hits. Now the hand is : {hand.HandValue}", ConsoleColor.DarkCyan);
-        return hand.HandValue<21;
+        return hand.HandValue < 21;
     }
 
     private bool ApplyDouble(Player player, Hand hand)
@@ -176,7 +173,7 @@ internal class GameManager
         player.Balance -= hand.BetAmount;
         dealer.Balance += hand.BetAmount;
         hand.BetAmount *= 2;
-        
+
         ConsoleHelper.WriteLine($"{player.Name} doubles. Now the hand is : {hand.HandValue}", ConsoleColor.Red);
         return false;
     }
@@ -207,7 +204,7 @@ internal class GameManager
             dealer.Balance += 100;
         }
 
-        if(!husoka.HusokaIsMorting && players.Any(x => x.NotWinningStreak >= 5) )
+        if (!husoka.HusokaIsMorting && players.Any(x => x.NotWinningStreak >= 5))
         {
             husoka.HusokaIsMorting = true;
             if (husoka.CurrentHusokaBet == 0) husoka.CurrentHusokaBet = 10;
@@ -226,8 +223,6 @@ internal class GameManager
             ConsoleHelper.WriteLine($"{husoka.Name}'s mooorting. We bet another {husoka.CurrentHusokaBet} TL. Our balance is : {husoka.Balance}", ConsoleColor.Black, ConsoleColor.Cyan);
         }
     }
-
-
 
     private void DealTheCards()
     {
@@ -255,7 +250,7 @@ internal class GameManager
         var card = deck[0];
         deck.Remove(deck[0]);
 
-        if(card.CardType == CardType.ShufflerCard)
+        if (card.CardType == CardType.ShufflerCard)
         {
             isShoeShouldChange = true;
             shufflerCard = card with { };   //copy the card with new reference
@@ -271,8 +266,6 @@ internal class GameManager
         else if (hand.HandValue == 21 && hand.Cards.Count == 2 && hand.Cards.Any(x => x.CardValue == CardValue.Ace))
             hand.IsBlackJack = true;
     }
-
-
 
     public void WriteAllCards()
     {

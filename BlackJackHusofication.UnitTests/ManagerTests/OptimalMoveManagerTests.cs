@@ -1,5 +1,5 @@
-﻿using BlackJackHusofication.Managers;
-using BlackJackHusofication.Models;
+﻿using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.UnitTests.ManagerTests;
 
