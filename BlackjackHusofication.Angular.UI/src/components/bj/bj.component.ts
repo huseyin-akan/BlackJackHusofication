@@ -3,11 +3,13 @@ import { Component } from '@angular/core';
 import { SignalRService } from '../../services/signalRService';
 import { NgFor, NgIf } from '@angular/common';
 import { SimulationLog } from '../../models/log-models/simulationLogs';
+import { BalanceTableComponent } from '../bj-simulator/balance-table/balance-table.component';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @Component({
   selector: 'app-bj',
   standalone: true,
-  imports: [FormsModule, NgFor, NgIf],
+  imports: [FormsModule, NgFor, NgIf, BalanceTableComponent, FlexLayoutModule],
   templateUrl: './bj.component.html',
   styleUrl: './bj.component.css'
 })
