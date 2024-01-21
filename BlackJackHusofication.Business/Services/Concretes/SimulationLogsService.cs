@@ -2,7 +2,6 @@
 using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.Model.Logs;
 using BlackJackHusofication.Model.Models;
-using BlackJackHusofication.Model.Models.Info;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BlackJackHusofication.Business.Services.Concretes;

@@ -1,0 +1,66 @@
+.bj-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.blackjack-table {
+  width: 1450px;
+  height: 800px;
+  background-color: green;
+  border-radius: 15px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dealer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.dealer-slots {
+  display: flex;
+  flex-direction: row;
+}
+
+.dealer-title {
+  color: white;
+  text-align: center;
+}
+
+.dealer-card-slot {
+  width: 120px;
+  height: 160px;
+  border: 1px solid #5a5454;
+  margin-right: 1rem;
+}
+
+.player-slots {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 250px;
+}
+
+.player {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 4rem;
+}
+
+.player-title {
+    color:blueviolet;
+}
+
+.player-slot {
+  display: flex;
+  justify-content: space-between;
+  width: 120px;
+  height: 160px;
+  border: 1px solid #5a5454;
+  margin-bottom: 1rem;
+}

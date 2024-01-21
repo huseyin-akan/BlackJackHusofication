@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { BjSimulatorComponent } from '../components/bj-simulator/bj-simulator.component';
+import { BjModule } from '../modules/bj-module/bj.module';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, BjSimulatorComponent],
+  imports: [RouterOutlet, BjModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
