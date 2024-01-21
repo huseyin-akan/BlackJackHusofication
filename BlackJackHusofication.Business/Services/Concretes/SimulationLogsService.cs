@@ -6,16 +6,15 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BlackJackHusofication.Business.Services.Concretes;
 
-public class SimulationLogsService(IHubContext<BlackJackHub> hubContext) : ISimulationLogsService
+public class SimulationLogsService(IHubContext<BlackJackHub, IBlackJackClient> _hubContext) : ISimulationLogsService
 {
-    private readonly IHubContext<BlackJackHub> _hubContext = hubContext;
     public async Task LogMessage(SimulationLog logMessage)
     {
-        await _hubContext.Clients.All.SendAsync("SendLog", logMessage); 
+        await _hubContext.Clients.All.SendLog(logMessage); 
     }
 
     public async Task UpdateSimulation(BjSimulation simulation)
     {
-        await _hubContext.Clients.All.SendAsync("UpdateSimulation", simulation);
+        await _hubContext.Clients.All.UpdateSimulation(simulation);
     }
 }
