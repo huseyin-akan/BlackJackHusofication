@@ -2,7 +2,7 @@ import { FormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 import { SignalRService } from '../../services/signalRService';
 import { NgFor, NgIf } from '@angular/common';
-import { SimulationLog, SimulationLogType } from '../../models/log-models/simulationLogs';
+import { SimulationLog } from '../../models/log-models/simulationLogs';
 
 @Component({
   selector: 'app-bj',

@@ -49,12 +49,12 @@ public class BjSimulationManager  : IGameManager
         for (int i = 0; i < roundNumber; i++)
         {
             await StartNewRound();
-            AskAllPlayersForActions();
-            PlayForDealer();
+            await AskAllPlayersForActions();
+            await PlayForDealer();
             BalanceManager.CheckHandsAndDeliverPrizes(players.Where(x => x.HasBetted), dealer, husoka);
             CollectAllCards();
         }
-        ReportEarnings();
+        await ReportEarnings();
     }
 
     private void CreateAFulTable()

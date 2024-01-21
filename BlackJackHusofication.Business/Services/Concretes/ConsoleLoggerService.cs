@@ -4,7 +4,7 @@ using BlackJackHusofication.Model.Logs;
 
 namespace BlackJackHusofication.Business.Services.Concretes;
 
-internal class ConsoleLoggerService : IConsoleLoggerService
+public class ConsoleLoggerService : IConsoleLoggerService
 {
     public Task LogMessage(SimulationLog logMessage)
     {
@@ -14,8 +14,26 @@ internal class ConsoleLoggerService : IConsoleLoggerService
             SimulationLogType.CardDealLog => LogDealAction(logMessage.Message),
             SimulationLogType.GameLog => LogGameLogs(logMessage.Message),
             SimulationLogType.DealerActions => LogDealerActions(logMessage.Message),
+            SimulationLogType.BalanceLog => LogBalance(logMessage.Message),
+            SimulationLogType.HusokaLog => LogHusoka(logMessage.Message),
             _ => throw new Exception("Böyle iş olmaz lan. Böyle racon olmaz")
         };
+    }
+
+    private Task LogHusoka(string message)
+    {
+        return Task.Run(() =>
+        {
+            LogHelper.WriteLine(message, ConsoleColor.DarkYellow);
+        });
+    }
+
+    private Task LogBalance(string message)
+    {
+        return Task.Run(() =>
+        {
+            LogHelper.WriteLine(message, ConsoleColor.DarkCyan);
+        });
     }
 
     private static Task LogCardAction(string message)
