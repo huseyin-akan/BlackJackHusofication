@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BjComponent } from './bj.component';
+import { BjSimulatorComponent } from './bj-simulator.component';
 
-describe('BjComponent', () => {
-  let component: BjComponent;
-  let fixture: ComponentFixture<BjComponent>;
+describe('BjSimulatorComponent', () => {
+  let component: BjSimulatorComponent;
+  let fixture: ComponentFixture<BjSimulatorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BjComponent]
+      imports: [BjSimulatorComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(BjComponent);
+    fixture = TestBed.createComponent(BjSimulatorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

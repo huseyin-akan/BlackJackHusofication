@@ -1,6 +1,7 @@
 ﻿using BlackJackHusofication.Business.Helpers;
 using BlackJackHusofication.Business.Services.Abstracts;
 using BlackJackHusofication.Model.Logs;
+using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.Business.Services.Concretes;
 
@@ -54,6 +55,14 @@ public class ConsoleLoggerService : IConsoleLoggerService
 
     private static Task LogDealAction(string message)
     {
+        //ConsoleColor color = card.CardType switch
+        //{
+        //    CardType.Spades or CardType.Clubs => ConsoleColor.DarkGray,
+        //    CardType.Hearts or CardType.Diamonds => ConsoleColor.Red,
+        //    CardType.ShufflerCard => ConsoleColor.Cyan,
+        //    _ => throw new NotImplementedException("Unhandled CardType"),
+        //};
+
         return Task.Run(() =>
         {
             LogHelper.WriteLine(message, ConsoleColor.Blue);
@@ -66,5 +75,10 @@ public class ConsoleLoggerService : IConsoleLoggerService
         {
             LogHelper.WriteLine(message, ConsoleColor.Magenta);
         });
+    }
+
+    public Task UpdateSimulation(BjSimulation simulation)
+    {
+        throw new NotImplementedException();
     }
 }

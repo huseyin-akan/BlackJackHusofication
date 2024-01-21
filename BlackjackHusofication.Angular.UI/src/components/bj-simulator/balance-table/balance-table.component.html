@@ -1,19 +1,32 @@
 <mat-card class="example-card">
     <mat-card-header>
-      <div mat-card-avatar class="example-header-image"></div>
-      <mat-card-title>Shiba Inu</mat-card-title>
-      <mat-card-subtitle>Dog Breed</mat-card-subtitle>
+      <mat-card-title>Oyuncu Bakiyeleri</mat-card-title>
+      <mat-card-subtitle>Tüm Oyuncular</mat-card-subtitle>
     </mat-card-header>
-    <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
     <mat-card-content>
-      <p>
-        The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
-        A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
-        bred for hunting.
-      </p>
+      <div  *ngFor="let player of bjSimulation.players">
+        <div fxLayout="row">
+          <div fxFlex="30">
+            <mat-icon aria-hidden="false" aria-label="person icon" fontIcon="person_apron"></mat-icon>
+              <span>{{player.name}}</span>
+          </div>
+          <div fxFlex="30">
+            <span *ngIf="player.losingStreak==0">Winnig Streak : {{player.winningStreak}}</span>
+              <span *ngIf="player.losingStreak>0">Losing Streak : {{player.losingStreak}}</span>
+          </div>
+          <div fxFlex="30">
+            <span>{{player.balance}} ₺</span>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+      </div>
+      
     </mat-card-content>
-    <mat-card-actions>
-      <button mat-button>LIKE</button>
-      <button mat-button>SHARE</button>
+    <mat-card-actions >
+      <button mat-raised-button color="primary">LIKE</button>
+      <button mat-raised-button color="accent">SHARE</button>
     </mat-card-actions>
+    <!-- <mat-card-footer>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </mat-card-footer> -->
 </mat-card>

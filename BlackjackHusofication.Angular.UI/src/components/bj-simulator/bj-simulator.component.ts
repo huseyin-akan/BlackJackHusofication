@@ -1,19 +1,19 @@
-import { FormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
-import { SignalRService } from '../../services/signalRService';
-import { NgFor, NgIf } from '@angular/common';
-import { SimulationLog } from '../../models/log-models/simulationLogs';
-import { BalanceTableComponent } from '../bj-simulator/balance-table/balance-table.component';
+import { FormsModule } from '@angular/forms';
+import { BalanceTableComponent } from './balance-table/balance-table.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { SimulationLog } from '../../models/log-models/simulationLogs';
+import { SignalRService } from '../../services/signalRService';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-bj',
+  selector: 'app-bj-simulator',
   standalone: true,
-  imports: [FormsModule, NgFor, NgIf, BalanceTableComponent, FlexLayoutModule],
-  templateUrl: './bj.component.html',
-  styleUrl: './bj.component.css'
+  imports: [FormsModule, CommonModule, BalanceTableComponent, FlexLayoutModule],
+  templateUrl: './bj-simulator.component.html',
+  styleUrl: './bj-simulator.component.css'
 })
-export class BjComponent {
+export class BjSimulatorComponent {
   logs: SimulationLog[] = [];
   betAmount;
 
@@ -21,8 +21,6 @@ export class BjComponent {
 
   ngOnInit(): void {
     this.signalRService.log$.subscribe(log => {
-      console.log('here in ts', log)
-      console.log('and message is : ', log.message)
       this.logs.push(log);
     });
   }
