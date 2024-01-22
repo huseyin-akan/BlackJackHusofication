@@ -10,10 +10,12 @@ public class BlackJackHub : Hub<IBlackJackClient>
         clients.Add(Context.ConnectionId);
         await Clients.All.AllClients(clients);
         await Clients.All.UserJoined(Context.ConnectionId);
+
         //await Clients.All.SendAsync("clients", clients);
-        //await Clients.All.SendAsync("userJoined", Context.ConnectionId);
         
         //STRONGLY TYPED HUBS :Normalde <IBlackJackClient> metodunu interface'ini vermezsek yukarıdaki gibi de kullanabiliriz. Fakat neden hataya mahal verelim ki. Tip güvenlikli çalışalım. Metot adlarımızla aynı mesajları SendAsync yapıyor kendisi arka planda. 
+
+        //Clients.All yerine Clients.Caller --> isteği atan client veya Clients.Others --> istek atan hariç tüm diğer clientları da hedef olarak seçebiliriz
     }
 
     public override async Task OnDisconnectedAsync(Exception exception) //bir client kopunca
