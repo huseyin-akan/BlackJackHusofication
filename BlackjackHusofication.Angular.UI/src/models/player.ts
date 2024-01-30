@@ -1,7 +1,7 @@
 import { Hand } from "./hand";
 
 export class Player{
-    id : number;
+    id : string;
     name : string;
     spot : number;
     balance : number;

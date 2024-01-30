@@ -1,0 +1,91 @@
+.bj-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .blackjack-table {
+    background-color: green;
+    border-radius: 15px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .dealer {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+  
+  .dealer-slots {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .dealer-title {
+    color: white;
+    text-align: center;
+  }
+  
+  .dealer-card-slot {
+    width: 120px;
+    height: 160px;
+    border: 1px solid #5a5454;
+    margin-right: 1rem;
+    border-radius : 1rem;
+  }
+
+  .dealer-card-slot img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius : 1rem;
+  } 
+  
+  .player-slots {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 250px;
+  }
+  
+  .player {
+      display:flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 2rem;
+      margin-left: 2rem;
+      margin-bottom : 2rem;
+  }
+  
+  .player-title {
+      color:blueviolet;
+  }
+  
+  .player-slot {
+    display: flex;
+    justify-content: space-between;
+    width: 120px;
+    height: 160px;
+    border: 1px solid #5a5454;
+    margin-bottom: 1rem;
+    border-radius : 1rem;
+  }
+
+  .animated-image{
+    opacity: 0;
+    animation: fadeIn 1s ease-in-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-50%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  

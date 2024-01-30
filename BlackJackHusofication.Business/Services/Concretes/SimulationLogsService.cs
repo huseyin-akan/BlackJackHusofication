@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BlackJackHusofication.Business.Services.Concretes;
 
-public class SimulationLogsService(IHubContext<BlackJackHub, IBlackJackClient> _hubContext) : ISimulationLogsService
+public class SimulationLogsService(IHubContext<BlackJackGameHub, IBlackJackGameClient> _hubContext) : ISimulationLogsService
 {
     public async Task LogMessage(SimulationLog logMessage)
     {

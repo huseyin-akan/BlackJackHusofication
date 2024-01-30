@@ -10,12 +10,16 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
+import { BjRoomsComponent } from './components/play-bj/bj-rooms/bj-rooms.component';
+import { BjGameAreaComponent } from './components/play-bj/bj-game-area/bj-game-area.component';
 
 @NgModule({
   declarations: [
     PlayBjComponent,
     BalanceTableComponent,
     BjSimulatorComponent,
+    BjRoomsComponent,
+    BjGameAreaComponent,
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,27 @@
+.bj-game-side-nav{
+    background-color: blueviolet;
+    height: 100%;
+}
+
+.all-bj-rooms{
+    background-color: aquamarine;
+    height: 50%;
+    overflow: scroll;
+    overflow-x: hidden;
+    border-radius: 1rem;
+}
+
+.bj-room-row{
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    font-weight: bold;
+}
+
+.bj-room-row:hover{
+    background-color: rgb(10, 87, 61);
+}
+
+.bj-room-row.active{
+    background-color: rgb(10, 87, 61);
+}

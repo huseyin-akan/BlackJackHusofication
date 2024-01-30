@@ -1,0 +1,10 @@
+<div class="bj-game-side-nav">
+    <div class="all-bj-rooms">
+        <div *ngFor="let room of rooms; let i = index">
+            <div class="bj-room-row" [ngClass]="{'active': i === 2}">
+                <div>{{room}}</div>
+                <a mat-raised-button (click)="joinRoom(room)" >Join Room</a>
+            </div>
+        </div>
+    </div>
+</div>  

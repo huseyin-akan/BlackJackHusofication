@@ -79,6 +79,7 @@ public class ConsoleLoggerService : IConsoleLoggerService
 
     public Task UpdateSimulation(BjSimulation simulation)
     {
-        throw new NotImplementedException();
+        //TODO-HUS
+        return Task.CompletedTask;
     }
 }

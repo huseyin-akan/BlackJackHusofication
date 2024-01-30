@@ -1,6 +1,7 @@
 export class Card {
     cardType: CardType;
     cardValue: CardValue;
+    cardImg : string;
 }
 
 export enum CardValue

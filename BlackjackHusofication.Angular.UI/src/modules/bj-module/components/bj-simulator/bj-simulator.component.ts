@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { SimulationLog } from '../../../../models/log-models/simulationLogs';
-import { SignalRService } from '../../../../services/signalRService';
+import { BjGameHubService } from '../../../../services/bjGameHubService';
 
 @Component({
   selector: 'app-bj-simulator',
@@ -11,7 +11,7 @@ export class BjSimulatorComponent {
   logs: SimulationLog[] = [];
   betAmount;
 
-  constructor(private signalRService: SignalRService) {}
+  constructor(private signalRService: BjGameHubService) {}
 
   ngOnInit(): void {
     this.signalRService.log$.subscribe(log => {

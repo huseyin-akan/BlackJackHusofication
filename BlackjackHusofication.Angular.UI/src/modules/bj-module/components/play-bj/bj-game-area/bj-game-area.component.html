@@ -1,0 +1,40 @@
+<div class="bj-container">
+    <div class="blackjack-table">
+        <!-- Dealer Slot -->
+        <div class="dealer">
+            <div class="dealer-title">
+                <span>Dealer</span>
+            </div>
+            <div class="dealer-slots">
+                <div class="dealer-card-slot">
+                    <img *ngIf="activeRoom" class="animated-image"
+                        [src]="'assets/images/deck/' + activeRoom?.table?.dealer?.hand?.cards[0]?.cardImg">
+                    <img *ngIf="!activeRoom" class="animated-image" src="assets/images/deck/d_12.svg">
+                </div>
+                <div class="dealer-card-slot">
+                    <img class="animated-image" src="assets/images/deck/card-back.jpg">
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Slots -->
+        <div class="player-slots">
+            <div class="player" *ngFor="let spot of activeRoom?.table?.spots; let i = index">
+                <div class="player-title" [hidden]="!spot">Player {{ i + 1 }}</div>
+                <div class="player-slot"></div>
+                <div class="player-card-value">12</div>
+                <button *ngIf="!spot" mat-fab color="primary" (click)="sitPlayer(i)"
+                    aria-label="Example icon button with a delete icon">
+                    <mat-icon>add_circle</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bet Buttons -->
+        <div class="bet-buttons" *ngIf="players[0]">
+            <button>10</button>
+            <button>20</button>
+            <button>50</button>
+        </div>
+    </div>
+</div>

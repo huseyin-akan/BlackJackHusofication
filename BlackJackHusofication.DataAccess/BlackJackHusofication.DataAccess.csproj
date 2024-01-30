@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\BlackJackHusofication.DataAccess\BlackJackHusofication.DataAccess.csproj" />
     <ProjectReference Include="..\BlackJackHusofication.Model\BlackJackHusofication.Model.csproj" />
   </ItemGroup>
 

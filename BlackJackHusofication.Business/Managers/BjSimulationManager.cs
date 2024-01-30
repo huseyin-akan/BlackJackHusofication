@@ -9,31 +9,32 @@ namespace BlackJackHusofication.Business.Managers;
 //Note: in this mode, 7 players play the most optimal moves. And Husoka bets behind.
 public class BjSimulationManager : IGameManager
 {
+    private readonly BjRoom bjRoom; //TODO-HUS aşağıdaki simulation objesi uçacak. Yerine BjRoom gelecek.
     private readonly BjSimulation _simulation;
-    private readonly IGameLogger _loggerService;
+    private readonly IGameLogger loggerService;
 
     public BjSimulationManager(IGameLogger loggerService)
     {
         _simulation = new()
         {
             RoundNo = 0,
-            Spots = new bool[8],
+            Spots = new bool[7],
             Players = [],
             PlayedCards = [],
             Deck = [],
-            Dealer = new Dealer() { Id = 1, Name = "Dealer", Balance = 0},
+            Dealer = new Dealer() { Id = 1.ToString(), Name = "Dealer", Balance = 0 },
             Husoka = new Husoka() { Id = 8, HusokaBettedFor = null, Balance = 1_270, Name = "Husoka", CurrentHusokaBet = 0, HusokaIsMorting = false }
         };
-        _simulation.Dealer.Spot = GivePlayerSpot(0);
-        _loggerService = loggerService;
+        this.loggerService = loggerService;
+        bjRoom = new() { Name = "SimulationRoom", RoomId = 256};
     }
 
     public async Task StartNewGame()
     {
         SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = "BlackJack oyununa Hoş Geldiniz. Kurpiyeriniz ben Husoka. Tüm paranızı kaybetmeye hazır olun. Hepinizi üteceğim." };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
 
-        _simulation.Deck = DeckHelper.CreateFullDeck(8);
+        _simulation.Deck = DeckHelper.CreateFullDeck(6);
         DeckHelper.ShuffleDecks(_simulation.Deck);
         CreateAFulTable();
     }
@@ -48,7 +49,7 @@ public class BjSimulationManager : IGameManager
             await AskAllPlayersForActions();
             await PlayForDealer();
             BalanceManager.CheckHandsAndDeliverPrizes(_simulation.Players.Where(x => x.HasBetted), _simulation.Dealer, _simulation.Husoka);
-            await _loggerService.UpdateSimulation(_simulation);
+            await loggerService.UpdateSimulation(_simulation);
             CollectAllCards();
         }
         await ReportEarnings();
@@ -56,18 +57,18 @@ public class BjSimulationManager : IGameManager
 
     private void CreateAFulTable()
     {
-        _simulation.Players.Add(new Player() { Id = 2, Name = "Player 1", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 3, Name = "Player 2", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 4, Name = "Player 3", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 5, Name = "Player 4", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 6, Name = "Player 5", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 7, Name = "Player 6", Balance = 1_000_000, Spot = GivePlayerSpot() });
-        _simulation.Players.Add(new Player() { Id = 8, Name = "Player 7", Balance = 1_000_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 2.ToString(), Name = "Player 1", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 3.ToString(), Name = "Player 2", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 4.ToString(), Name = "Player 3", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 5.ToString(), Name = "Player 4", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 6.ToString(), Name = "Player 5", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 7.ToString(), Name = "Player 6", Balance = 10_000, Spot = GivePlayerSpot() });
+        _simulation.Players.Add(new Player() { Id = 8.ToString(), Name = "Player 7", Balance = 10_000, Spot = GivePlayerSpot() });
     }
 
     private int GivePlayerSpot(int spotNo = 1)
     {
-        if (spotNo == 1) spotNo = Array.IndexOf(_simulation.Spots, false);
+        if (spotNo == 1) spotNo = Array.IndexOf(_simulation.Spots, false) + 1;
         if (spotNo == -1) return -1;
 
         _simulation.Spots[spotNo] = true;
@@ -95,17 +96,17 @@ public class BjSimulationManager : IGameManager
             && !_simulation.Players.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
 
         SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = $"{_simulation.Dealer.Name}'s second card is: {_simulation.Dealer.Hand.Cards[1].CardType} - {_simulation.Dealer.Hand.Cards[1].CardValue}" };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
 
         SimulationLog log2 = new() { LogType = SimulationLogType.GameLog, Message = $"{_simulation.Dealer.Name}'s current hand: {_simulation.Dealer.Hand.HandValue}" };
-        await _loggerService.LogMessage(log2);
+        await loggerService.LogMessage(log2);
 
         //Otherwise dealers opens card and hits until at least 17
         while (_simulation.Dealer.Hand.HandValue < 17)
         {
             DealCard(_simulation.Dealer.Hand);
             SimulationLog log3 = new() { LogType = SimulationLogType.DealerActions, Message = $"{_simulation.Dealer.Name} hits. Now the hand is : {_simulation.Dealer.Hand.HandValue}" };
-            await _loggerService.LogMessage(log3);
+            await loggerService.LogMessage(log3);
         }
     }
 
@@ -147,7 +148,7 @@ public class BjSimulationManager : IGameManager
     private async Task<bool> ApplyStand(Player player, Hand hand)
     {
         SimulationLog log3 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} stands. Now the hand is : {hand.HandValue}" };
-        await _loggerService.LogMessage(log3);
+        await loggerService.LogMessage(log3);
         return false;
     }
 
@@ -161,18 +162,18 @@ public class BjSimulationManager : IGameManager
         player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
         player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
         SimulationLog log = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}" };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
         DealCard(player.Hand);
         SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}" };
-        await _loggerService.LogMessage(log2);
-        return true;
+        await loggerService.LogMessage(log2);
+        return false;
     }
 
     private async Task<bool> ApplyHit(Player player, Hand hand)
     {
         DealCard(hand);
         SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} hits. Now the hand is : {hand.HandValue}" };
-        await _loggerService.LogMessage(log2);
+        await loggerService.LogMessage(log2);
         return hand.HandValue < 21;
     }
 
@@ -184,7 +185,7 @@ public class BjSimulationManager : IGameManager
         hand.BetAmount *= 2;
 
         SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} doubles. Now the hand is : {hand.HandValue}" };
-        await _loggerService.LogMessage(log2);
+        await loggerService.LogMessage(log2);
         return false;
     }
 
@@ -198,7 +199,7 @@ public class BjSimulationManager : IGameManager
     {
         _simulation.RoundNo++;
         SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = $"--------------------------- ROUND - {_simulation.RoundNo} HAS STARTED ---------------------------" };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
         await AcceptTheBets();
         DealTheCards();
         await WriteTableCardsForRound();
@@ -223,7 +224,7 @@ public class BjSimulationManager : IGameManager
             _simulation.Dealer.Balance -= _simulation.Husoka.CurrentHusokaBet;
             _simulation.Husoka.HusokaBettedFor = _simulation.Players.First(x => x.NotWinningStreak >= 5);
             SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = $"{_simulation.Husoka.Name}'s morting. Let's gooo!. Our balance is : {_simulation.Husoka.Balance}" };
-            await _loggerService.LogMessage(log);
+            await loggerService.LogMessage(log);
         }
 
         else if (_simulation.Husoka.HusokaIsMorting)
@@ -232,9 +233,9 @@ public class BjSimulationManager : IGameManager
             _simulation.Husoka.Balance -= _simulation.Husoka.CurrentHusokaBet;
             _simulation.Dealer.Balance -= _simulation.Husoka.CurrentHusokaBet;
             SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = $"{_simulation.Husoka.Name}'s mooorting. We bet another {_simulation.Husoka.CurrentHusokaBet} TL. Our balance is : {_simulation.Husoka.Balance}" };
-            await _loggerService.LogMessage(log);
+            await loggerService.LogMessage(log);
         }
-        await _loggerService.UpdateSimulation(_simulation);
+        await loggerService.UpdateSimulation(_simulation);
     }
 
     private void DealTheCards()
@@ -260,24 +261,24 @@ public class BjSimulationManager : IGameManager
 
     private void DealCard(Hand hand)
     {
-        var card = _simulation.Deck[0];
-        _simulation.Deck.Remove(_simulation.Deck[0]);
-
-        if (card.CardType == CardType.ShufflerCard)
-        {
-            _simulation.IsShoeShouldChange = true;
-            _simulation.ShufflerCard = card with { };   //copy the card with new reference
-            card = _simulation.Deck[0];
+            var card = _simulation.Deck[0];
             _simulation.Deck.Remove(_simulation.Deck[0]);
-        }
 
-        hand.Cards.Add(card);
-        hand.HandValue = CardManager.GetCountOfHand(hand);
+            if (card.CardType == CardType.ShufflerCard)
+            {
+                _simulation.IsShoeShouldChange = true;
+                _simulation.ShufflerCard = card with { };   //copy the card with new reference 
+                card = _simulation.Deck[0];
+                _simulation.Deck.Remove(_simulation.Deck[0]);
+            }
 
-        if (hand.HandValue > 21) hand.IsBusted = true;
+            hand.Cards.Add(card);
+            hand.HandValue = CardManager.GetCountOfHand(hand);
 
-        else if (hand.HandValue == 21 && hand.Cards.Count == 2 && hand.Cards.Any(x => x.CardValue == CardValue.Ace))
-            hand.IsBlackJack = true;
+            if (hand.HandValue > 21) hand.IsBusted = true;
+
+            else if (hand.HandValue == 21 && hand.Cards.Count == 2 && hand.Cards.Any(x => x.CardValue == CardValue.Ace))
+                hand.IsBlackJack = true;
     }
 
     public async Task WriteAllCards()
@@ -295,21 +296,21 @@ public class BjSimulationManager : IGameManager
     {
         SimulationLog log = new() { LogType = SimulationLogType.CardDealLog, Message = card.CardValue.ToString() };
         SimulationLog log2 = new() { LogType = SimulationLogType.CardDealLog, Message = card.CardType.ToString() };
-        await _loggerService.LogMessage(log);
-        await _loggerService.LogMessage(log2);
+        await loggerService.LogMessage(log);
+        await loggerService.LogMessage(log2);
         Console.WriteLine();
     }
 
     public async Task WriteTableCardsForRound()
     {
         SimulationLog log = new() { LogType = SimulationLogType.DealerActions, Message = "Dealer has :" };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
         await WriteCard(_simulation.Dealer.Hand.Cards[0]);
 
         foreach (var player in _simulation.Players.Where(x => x.HasBetted))
         {
             SimulationLog log2 = new() { LogType = SimulationLogType.CardDealLog, Message = player.Name + " has :" };
-            await _loggerService.LogMessage(log2);
+            await loggerService.LogMessage(log2);
             await WriteCard(player.Hand.Cards[0]);
             await WriteCard(player.Hand.Cards[1]);
         }
@@ -318,16 +319,16 @@ public class BjSimulationManager : IGameManager
     private async Task ReportEarnings()
     {
         SimulationLog log = new() { LogType = SimulationLogType.GameLog, Message = "-----------------------------------------------------------------------------------------" };
-        await _loggerService.LogMessage(log);
+        await loggerService.LogMessage(log);
         foreach (var player in _simulation.Players)
         {
             SimulationLog log2 = new() { LogType = SimulationLogType.BalanceLog, Message = $"{player.Name} current balance is : {player.Balance}" };
-            await _loggerService.LogMessage(log2);
+            await loggerService.LogMessage(log2);
         }
         SimulationLog log3 = new() { LogType = SimulationLogType.HusokaLog, Message = $"{_simulation.Husoka.Name} current balance is : {_simulation.Husoka.Balance}" };
-        await _loggerService.LogMessage(log3);
+        await loggerService.LogMessage(log3);
         SimulationLog log4 = new() { LogType = SimulationLogType.DealerActions, Message = $"{_simulation.Dealer.Name} current balance is : {_simulation.Dealer.Balance}" };
-        await _loggerService.LogMessage(log4);
+        await loggerService.LogMessage(log4);
     }
 
     public static int AskForRounds()

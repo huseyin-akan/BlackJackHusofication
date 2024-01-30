@@ -17,11 +17,11 @@ class DeckHelper
                 foreach (CardValue cardValue in Enum.GetValues(typeof(CardValue)))
                 {
                     if (cardValue == CardValue.ShufflerCard) continue;
-                    fullDeck.Add(new Card(cardType, cardValue));
+                    fullDeck.Add(new Card(cardType, cardValue, $"{cardType.ToString()[0].ToString().ToLower()}_{cardValue.ToString()[0]}.svg"));
                 }
             }
         }
-        fullDeck.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard));
+        fullDeck.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard, "shuffler-card.svg"));
 
         return fullDeck;
     }
@@ -46,7 +46,7 @@ class DeckHelper
         //We add the shuffler card somewhere in the half
         var deckCount = cards.Count / 52;
         var somewhereInTheHalf = cards.Count / 2 + deckCount * 4 - random.Next(deckCount * 8);
-        cards.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard));
+        cards.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard, "shuffler-card.svg"));
         (cards[^1], cards[somewhereInTheHalf]) = (cards[somewhereInTheHalf], cards[^1]);
 
         return cards;

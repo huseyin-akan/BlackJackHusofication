@@ -45,6 +45,15 @@ internal class BalanceManager
                 player.WinningStreak++;
             }
 
+            //dealer has blackjack player loses
+            else if (dealer.Hand.IsBlackJack)
+            {
+                LogHelper.WriteLine($"Fudgeee!! {player.Name} has lost the round", ConsoleColor.DarkRed);
+                player.LosingStreak++;
+                player.NotWinningStreak++;
+                player.WinningStreak = 0;
+            }
+
             //it is a push
             else if (dealer.Hand.HandValue == playerHand.HandValue)
             {
