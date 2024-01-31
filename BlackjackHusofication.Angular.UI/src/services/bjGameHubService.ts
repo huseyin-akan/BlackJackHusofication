@@ -94,13 +94,13 @@ export class BjGameHubService {
       .invoke('PlayerJoinRoom', groupName);
   }
 
-  sitPlayer(groupName : string, spotIndex : number){
+  sitPlayer(groupName : string, spotId : number){
     return this.hubConnection
-      .invoke('SitPlayer', groupName, spotIndex);     
+      .invoke('SitPlayer', groupName, spotId);     
   }
 
-  playerBet(roomName : string, betAmount : number){
+  playerBet(roomName : string, spotId: number, betAmount : number){
     return this.hubConnection
-      .invoke('PlayerBet', roomName, 100);  
+      .invoke('PlayerBet', roomName, spotId, betAmount);  
   }
 }

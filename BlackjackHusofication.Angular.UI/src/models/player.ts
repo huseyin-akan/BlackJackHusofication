@@ -8,7 +8,4 @@ export class Player{
     losingStreak : number;
     notWinningStreak : number;
     winningStreak : number;
-    hasBetted : boolean;
-    hand : Hand;
-    splittedHand : Hand;
 }

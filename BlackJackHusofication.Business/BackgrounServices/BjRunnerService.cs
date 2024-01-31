@@ -37,9 +37,10 @@ public class BjRunnerService : BackgroundService
             _logger.LogInformation("Hadi lan kekolar bet atın");
             
             //We give to the players 30 seconds to bet. 
-            var startNewRound = await HandleAcceptingBetsCountDown(BjEventType.AcceptingBets, 10, cancellationToken);
+            var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 15, cancellationToken);
             if (!startNewRound) continue;
 
+            cancellationToken = _game.CancellationTokenSource.Token;
             _logger.LogError("Bet atan bir keko var. Gel de paranı yiyim senin enayi!");
 
 
@@ -49,26 +50,49 @@ public class BjRunnerService : BackgroundService
             var message = $"Room number is {_game.RoomId}: {DateTime.Now:HH:mm}";
             await _hubContext.Clients.All.SendLog(new() { Message = message });
             _logger.LogInformation(message: message);
+
+            //Round is over, we should reset the values.
+            ResetAfterRoundEnd();
         }
 
         _logger.LogError("La noli hata var");
         _logger.LogDebug("hadi bakalım");
     }
 
-    private async Task<bool> HandleAcceptingBetsCountDown(BjEventType eventType, int seconds, CancellationToken cancellationToken)
+    private void ResetAfterRoundEnd()
     {
-        for (int i = 0; i < seconds; i++) //each second
+        foreach (var spot in _game.Table.Spots.Where(p => p.BetAmount != 0))
         {
-            var delayTask = Task.Delay(1_000, cancellationToken);
-            var notificationTask = _hubContext.Clients.Group(_game.Name).NotifyCountDown(new CountDownNotification(eventType, seconds - i));
-            await Task.WhenAll(delayTask, notificationTask);
-            _logger.LogInformation("1 sn geçti. Tüm masalarda bet yok hala. Hadi kekolar bet atın!");
+            spot.BetAmount = 0;
+            spot.Hand = new();
+            spot.SplittedHand = null;
+        }
+    }
+
+    private async Task<bool> CheckIfPlayersBetInTime(BjEventType eventType, int seconds, CancellationToken cancellationToken)
+    {
+        try
+        {
+            for (int i = 0; i < seconds; i++) //each second
+            {
+                var delayTask = Task.Delay(1_000, cancellationToken);
+                var notificationTask = _hubContext.Clients.Group(_game.Name).NotifyCountDown(new CountDownNotification(eventType, seconds - i));
+                await Task.WhenAll(delayTask, notificationTask);
+                _logger.LogInformation("1 sn geçti. Tüm masalarda bet yok hala. Hadi kekolar bet atın!");
+            }
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogInformation(ex.Message);
+            _game.CancellationTokenSource = new CancellationTokenSource();
+            
+            return true;
         }
 
         _logger.LogInformation("Süre doldu. Bakalım kimse bet attı mı?");
         
         //If any player sitting in the table has betted, then start the round
-        if (_game.Table.Players.Any(x => x.HasBetted)) return true;
+        if (_game.Table.Spots.Any(x => x.BetAmount != 0) ) return true;
 
         return false;
     }

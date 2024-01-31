@@ -1,5 +1,6 @@
 ﻿using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.DataAccess.StaticData;
+using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 using Microsoft.AspNetCore.SignalR;
 
@@ -36,24 +37,25 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     public async Task PlayerLeaveRoom(string roomName)
     {
         var connectionId = Context.ConnectionId;
-        var room = roomManager.RemovePlayer(roomName, connectionId);
+        var room = roomManager.RemovePlayerFromRoom(roomName, connectionId);
+        //TODO-HUS when player is disconnected or leave the room etc. Player should still sit in spot for a 2 rounds.
 
         await Groups.RemoveFromGroupAsync(connectionId, roomName);
         await Clients.Group(roomName).PlayerLeftRoom(room);
     }
 
-    public async Task SitPlayer(string roomName, int spotIndex)
+    public async Task SitPlayer(string roomName, int spotId)
     {
         var connectionId = Context.ConnectionId;
-        var room = roomManager.SitPlayerToTable(roomName, connectionId, spotIndex);
+        var room = roomManager.SitPlayerToSpot(roomName, connectionId, spotId);
 
         await Clients.Group(roomName).SitPlayer(room);
     }
 
-    public async Task PlayerLeaveTable(string roomName)
+    public async Task PlayerLeaveTable(string roomName, int spotId)
     {
         var connectionId = Context.ConnectionId;
-        var room = roomManager.RemovePlayerFromTable(roomName, connectionId);
+        var room = roomManager.RemovePlayerFromSpot(roomName, connectionId, spotId);
 
         await Clients.Group(roomName).PlayerLeaveTable(room);
     }
@@ -83,19 +85,23 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         await Clients.Caller.GetAllBjRooms(roomManager.GetRooms() );
     }
 
-    public async Task PlayerBet(string roomName, decimal betAmount)
+    //TODO-HUS aynı oyuncunun farklı koltuklara otururken referansı aynı gitmesinden kaynaklı problemleri var. 
+    public async Task PlayerBet(string roomName, int spotIndex, decimal betAmount)
     {
-        var player = roomManager.GetSittingPlayer(roomName, Context.ConnectionId);
+        var player = roomManager.GetSittingPlayer(roomName, spotIndex) ?? throw new BjGameException("Koltuk oyuncu yok!!!"); ;
         var game = roomManager.GetGame(roomName);
         
         //player bets
-        game.PlayerBet(player, betAmount);
+        BalanceManager.PlayerBet(player, game, betAmount, spotIndex);
 
         //send all players in the room a notification about player's bet
         var bettingNotificationTask = Clients.Group(roomName).PlayerBet(betAmount);
 
-        //if there is no any player left who hasnt betted yet, cancel count-down.
-        if(!game.Table.Players.Any(x => !x.HasBetted) ) game.CancellationTokenSource.Cancel();
+        //if the table is full and there is no any spot left where bet is not registered, cancel count-down.
+        if (game.Table.Spots.Count(x => x.Player is not null) == 7 && !game.Table.Spots.Any(x => x.BetAmount == 0)) {
+            game.CancellationTokenSource.Cancel();
+            game.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS sadece yukarıki yetiyor olmalı
+        } 
         
         await bettingNotificationTask;
     }

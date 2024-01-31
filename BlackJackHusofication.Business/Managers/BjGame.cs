@@ -5,7 +5,7 @@ namespace BlackJackHusofication.Business.Managers;
 
 public class BjGame
 {
-    public readonly CancellationTokenSource CancellationTokenSource;
+    public CancellationTokenSource CancellationTokenSource;
     public required int RoomId { get; set; }
     public required string Name { get; set; }
     public int RoundNo { get; set; }
@@ -20,12 +20,5 @@ public class BjGame
 
         Table.Deck = DeckHelper.CreateFullDeck(6);
         DeckHelper.ShuffleDecks(Table.Deck);
-    }
-
-    public void PlayerBet(Player player, decimal betAmount)
-    {
-        player.HasBetted = true;
-        player.Balance -= betAmount;
-        Table.Balance += betAmount;
     }
 }

@@ -1,4 +1,5 @@
-﻿using BlackJackHusofication.Model.Models;
+﻿using BlackJackHusofication.Model.Exceptions;
+using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.Business.Managers;
 
@@ -21,51 +22,64 @@ public class BjRoomManager
         return room;
     }
 
-    public BjGame RemovePlayer(string roomName, string connectionId)
+    
+    public BjGame RemovePlayerFromRoom(string roomName, string connectionId)
     {
-        var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
+        var room = _rooms[roomName] ?? throw new BjGameException("Böyle bir oda yok la!!!");
 
         var currentPlayer = room.Players.FirstOrDefault(p => p.Id == connectionId)
-            ?? throw new Exception("Böyle bir oyuncu yok kardeşim");
+            ?? throw new BjGameException("Böyle bir oyuncu yok kardeşim");
 
         room.Players.Remove(currentPlayer);
-        room.Table.Players.Remove(currentPlayer);
+        var playerSittingSpots = room.Table.Spots.Where(x => x?.Player?.Id == currentPlayer.Id);
+        foreach (var spot in playerSittingSpots)
+        {
+            spot.Player = null;
+        }
+
         return room;
     }
 
-    public BjGame SitPlayerToTable(string roomName, string connectionId, int spotIndex)
+    //TODO-HUS Global Exception yazalım SignalR için de. Sonra frontend tarafında notification verelim.
+    public BjGame SitPlayerToSpot(string roomName, string connectionId, int spotId)
     {
-        var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
+        var room = _rooms[roomName] ?? throw new BjGameException("Böyle bir oda yok la!!!");
+        var currentPlayer = room.Players.FirstOrDefault(p => p.Id == connectionId)
+            ?? throw new BjGameException("Böyle bir oyuncu yok kardeşim");
+
+        var spot = room.Table.Spots.FirstOrDefault(x => x.Id == spotId)
+            ?? throw new BjGameException("Oturmak isteği attığınız koltuk mevcut değil!!!");
+        var isSpotAvailable = spot.Player is null;
+        
+        if (!isSpotAvailable) throw new BjGameException("Yer yok la nasıl oturacan :D ");
+        else spot.Player = currentPlayer;
+        
+        return room;
+    }
+
+    public BjGame RemovePlayerFromSpot(string roomName, string connectionId, int spotId)
+    {
+        var room = _rooms[roomName] ?? throw new BjGameException("Böyle bir oda yok la!!!");
         var currentPlayer = room.Players.FirstOrDefault(p => p.Id == connectionId)
             ?? throw new Exception("Böyle bir oyuncu yok kardeşim");
 
-        var isSpotAvailable = room.Table.Spots[spotIndex];
-        if (isSpotAvailable) throw new Exception("Dolu kucağa oturmak bizde yasak la"); ;
+        var spot = room.Table.Spots.FirstOrDefault(x => x.Id == spotId)
+            ?? throw new BjGameException("Oturma isteği attığınız koltuk mevcut değil!!!");
 
-        currentPlayer.Spot = spotIndex;
-        room.Table.Players.Add(currentPlayer);
-        room.Table.Spots[spotIndex] = true;
-
-        return room;
-    }
-
-    public BjGame RemovePlayerFromTable(string roomName, string connectionId)
-    {
-        var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
-        var currentPlayer = room.Table.Players.FirstOrDefault(p => p.Id == connectionId)
-            ?? throw new Exception("Böyle bir oyuncu yok kardeşim");
-
-        room.Table.Players.Remove(currentPlayer);
-        room.Table.Spots[currentPlayer.Spot] = false;
-        currentPlayer.Spot = 0;
+        spot.Player = null;
 
         return room;
     }
 
     public List<string> GetRooms() => [.. _rooms.Keys];
 
-    public BjGame GetGame(string roomName) => _rooms[roomName] ?? throw new Exception("Oda yok");
+    public BjGame GetGame(string roomName) => _rooms[roomName] ?? throw new BjGameException("Oda yok");
 
-    public Player GetSittingPlayer(string roomName, string connectionId) =>
-        _rooms[roomName].Table.Players.FirstOrDefault(x => x.Id == connectionId) ?? throw new Exception("Bu odada bu oyuncu masada oturmuyor.");
+    public Player? GetSittingPlayer(string roomName, int spotId)
+    {
+        var spot = _rooms[roomName].Table.Spots.FirstOrDefault(x => x.Id == spotId)
+            ?? throw new BjGameException("Oturma isteği attığınız koltuk mevcut değil!!!");
+
+        return spot.Player;
+    } 
 }

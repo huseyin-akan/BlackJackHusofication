@@ -1,5 +1,8 @@
-import { Player } from "./player";
+import { Hand } from "./hand";
 
-export class Dealer extends Player{
-
+export class Dealer{
+    id: number;
+    name : string;
+    balance : number;
+    hand: Hand = new Hand();
 }

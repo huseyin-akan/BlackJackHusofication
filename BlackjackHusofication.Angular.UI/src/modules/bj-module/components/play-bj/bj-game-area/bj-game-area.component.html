@@ -23,11 +23,11 @@
                 <div class="player-title" [hidden]="!spot">Player {{ i + 1 }}</div>
                 <div class="player-slot"></div>
                 <div class="player-card-value">12</div>
-                <button *ngIf="!spot" mat-fab color="primary" (click)="sitPlayer(i)"
+                <button *ngIf="!spot.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
                     aria-label="Example icon button with a delete icon">
                     <mat-icon>add_circle</mat-icon>
                 </button>
-                <button mat-fab color="primary" (click)="betPlayer(i)"
+                <button mat-fab color="primary" (click)="betPlayer(spot.id)"
                     aria-label="sdf">
                     <mat-icon>local_atm</mat-icon>
                 </button>

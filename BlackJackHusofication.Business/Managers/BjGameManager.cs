@@ -24,15 +24,8 @@ public class BjGameManager : IGameManager
     {
         await Task.Delay(30_000, cancellationToken);
 
-        return _game.Table.Players.Any(x => x.HasBetted);
-    }
-
-    public static void PlayerBet(Player player, BjGame room, decimal betAmount)
-    {
-        player.HasBetted = true;
-        player.Balance -= betAmount;
-        player.Hand.BetAmount = betAmount;
-        room.Table.Balance += betAmount;
+        //return _game.Table.Players.Any(x => x.HasBetted); 
+        return true;
     }
 
     private static void DealTheCards(BjGame room)
@@ -48,8 +41,8 @@ public class BjGameManager : IGameManager
 
         for (int i = 0; i < 2; i++)
         {
-            //Deal for all players who has betted
-            foreach (var player in room.Table.Players.Where(x => x.HasBetted)) DealCard(room, player.Hand);
+            //Deal for all spots where bet is registered
+            foreach (var spot in room.Table.Spots.Where(x => x.BetAmount != 0)) DealCard(room, spot.Hand);
 
             //Deal for dealer
             DealCard(room, room.Table.Dealer.Hand);
@@ -78,8 +71,9 @@ public class BjGameManager : IGameManager
 
     private static async Task AskAllPlayersForActions(BjGame room)
     {
-        foreach (var player in room.Table.Players.Where(x => x.HasBetted))
+        foreach (var spot in room.Table.Spots.Where(x => x.BetAmount != 0))
         {
+            //TODO-HUS aşağıda player yazan yerler --> spot.Player
             var shouldAskForNormalHand = true;
             //while (shouldAskForNormalHand)
             //{
@@ -112,7 +106,7 @@ public class BjGameManager : IGameManager
             //    shouldAskForSplitHand = await ApplyPlayerAction(player, player.SplittedHand, playerAction);
             //}
 
-            if (player.Hand.HandValue > 21) player.Hand.IsBusted = true;
+            if (spot.Hand.HandValue > 21) spot.Hand.IsBusted = true;
         }
     }
 

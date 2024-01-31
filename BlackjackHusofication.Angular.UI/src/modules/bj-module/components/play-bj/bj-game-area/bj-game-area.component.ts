@@ -24,13 +24,13 @@ export class BjGameAreaComponent {
     });
   }
 
-  sitPlayer(index: number): void {
-    this.bjGameHubService.sitPlayer(this.activeRoom.name, index)
+  sitPlayer(spotId: number): void {
+    this.bjGameHubService.sitPlayer(this.activeRoom.name, spotId)
     .catch((err) => console.error(err));
   }
 
-  betPlayer(index: number): void {
-    this.bjGameHubService.playerBet(this.activeRoom.name, index)
+  betPlayer(spotId: number): void {
+    this.bjGameHubService.playerBet(this.activeRoom.name, spotId, 100)
     .catch((err) => console.error(err));
   }
 
