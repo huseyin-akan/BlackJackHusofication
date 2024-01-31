@@ -10,8 +10,7 @@ public class BjGame
     public required string Name { get; set; }
     public int RoundNo { get; set; }
     public List<Player> Players { get; set; } //Players who are not yet on the table, but those players can bet behind.
-    public readonly Table Table;
-
+    public Table Table { get; }
     public BjGame()
     {
         RoundNo = 0;

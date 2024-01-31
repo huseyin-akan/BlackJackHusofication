@@ -20,12 +20,17 @@ export class BjGameAreaComponent {
 
     this.bjGameHubService.activeRoom$.subscribe(room => {
       this.activeRoom = room
-      console.log(this.activeRoom.table.spots)
+      console.log(room)
     });
   }
 
   sitPlayer(index: number): void {
     this.bjGameHubService.sitPlayer(this.activeRoom.name, index)
+    .catch((err) => console.error(err));
+  }
+
+  betPlayer(index: number): void {
+    this.bjGameHubService.playerBet(this.activeRoom.name, index)
     .catch((err) => console.error(err));
   }
 

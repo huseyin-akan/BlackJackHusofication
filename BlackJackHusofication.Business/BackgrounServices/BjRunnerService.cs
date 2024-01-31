@@ -37,7 +37,7 @@ public class BjRunnerService : BackgroundService
             _logger.LogInformation("Hadi lan kekolar bet atın");
             
             //We give to the players 30 seconds to bet. 
-            var startNewRound = await HandleAcceptingBetsCountDown(BjEventType.AcceptingBets, 30, cancellationToken);
+            var startNewRound = await HandleAcceptingBetsCountDown(BjEventType.AcceptingBets, 10, cancellationToken);
             if (!startNewRound) continue;
 
             _logger.LogError("Bet atan bir keko var. Gel de paranı yiyim senin enayi!");
@@ -50,6 +50,9 @@ public class BjRunnerService : BackgroundService
             await _hubContext.Clients.All.SendLog(new() { Message = message });
             _logger.LogInformation(message: message);
         }
+
+        _logger.LogError("La noli hata var");
+        _logger.LogDebug("hadi bakalım");
     }
 
     private async Task<bool> HandleAcceptingBetsCountDown(BjEventType eventType, int seconds, CancellationToken cancellationToken)

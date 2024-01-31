@@ -98,4 +98,9 @@ export class BjGameHubService {
     return this.hubConnection
       .invoke('SitPlayer', groupName, spotIndex);     
   }
+
+  playerBet(roomName : string, betAmount : number){
+    return this.hubConnection
+      .invoke('PlayerBet', roomName, 100);  
+  }
 }
