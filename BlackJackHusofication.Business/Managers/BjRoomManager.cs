@@ -4,30 +4,15 @@ namespace BlackJackHusofication.Business.Managers;
 
 public class BjRoomManager
 {
-    private readonly Dictionary<string, BjRoom> _rooms = [];
+    private readonly Dictionary<string, BjGame> _rooms = [];
     public readonly List<string> _clients = [];
 
-    public BjRoomManager()
+    public BjGame CreateRoom(string roomName, int roomId)
     {
-        _rooms.Add("Blackjack - 1", new(){ RoomId = 1, Name = "Blackjack - 1" });
-        _rooms.Add("Blackjack - 2", new(){ RoomId = 1, Name = "Blackjack - 2" });
-        _rooms.Add("Blackjack - 3", new(){ RoomId = 1, Name = "Blackjack - 3" });
-        _rooms.Add("Blackjack - 4", new(){ RoomId = 1, Name = "Blackjack - 4" });
-        _rooms.Add("Blackjack - 5", new(){ RoomId = 1, Name = "Blackjack - 5" });
-        _rooms.Add("Blackjack - 6", new(){ RoomId = 1, Name = "Blackjack - 6" });
-        _rooms.Add("Blackjack - 7", new(){ RoomId = 1, Name = "Blackjack - 7" });
-        _rooms.Add("Blackjack - 8", new(){ RoomId = 1, Name = "Blackjack - 8" });
-        _rooms.Add("Blackjack - 9", new(){ RoomId = 1, Name = "Blackjack - 9" });
-        _rooms.Add("Blackjack - 10", new(){ RoomId = 1, Name = "Blackjack - 10" });
-        _rooms.Add("Blackjack - 11", new(){ RoomId = 1, Name = "Blackjack - 11" });
+        return _rooms[roomName] = new BjGame() { Name = roomName, RoomId = roomId };
     }
 
-    public void CreateRoom(string roomName, int roomId)
-    {
-        _rooms[roomName] = new BjRoom() { Name = roomName, RoomId = roomId };
-    }
-
-    public BjRoom AddPlayerToRoom(string roomName, string connectionId)
+    public BjGame AddPlayerToRoom(string roomName, string connectionId)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!"); 
 
@@ -36,7 +21,7 @@ public class BjRoomManager
         return room;
     }
 
-    public BjRoom RemovePlayer(string roomName, string connectionId)
+    public BjGame RemovePlayer(string roomName, string connectionId)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
 
@@ -48,7 +33,7 @@ public class BjRoomManager
         return room;
     }
 
-    public BjRoom SitPlayerToTable(string roomName, string connectionId, int spotIndex)
+    public BjGame SitPlayerToTable(string roomName, string connectionId, int spotIndex)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
         var currentPlayer = room.Players.FirstOrDefault(p => p.Id == connectionId)
@@ -64,7 +49,7 @@ public class BjRoomManager
         return room;
     }
 
-    public BjRoom RemovePlayerFromTable(string roomName, string connectionId)
+    public BjGame RemovePlayerFromTable(string roomName, string connectionId)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!");
         var currentPlayer = room.Table.Players.FirstOrDefault(p => p.Id == connectionId)
@@ -79,5 +64,8 @@ public class BjRoomManager
 
     public List<string> GetRooms() => [.. _rooms.Keys];
 
-    public BjRoom GetRoom(string roomName) => _rooms[roomName] ?? throw new Exception("Oda yok");
+    public BjGame GetGame(string roomName) => _rooms[roomName] ?? throw new Exception("Oda yok");
+
+    public Player GetSittingPlayer(string roomName, string connectionId) =>
+        _rooms[roomName].Table.Players.FirstOrDefault(x => x.Id == connectionId) ?? throw new Exception("Bu odada bu oyuncu masada oturmuyor.");
 }

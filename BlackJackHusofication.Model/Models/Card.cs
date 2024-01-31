@@ -1,6 +1,6 @@
 ﻿namespace BlackJackHusofication.Model.Models;
 
-public record Card(CardType CardType, CardValue CardValue, string CardImg);
+public record Card(CardType CardType, CardValue CardValue, string? CardImg);
 
 public enum CardValue
 {

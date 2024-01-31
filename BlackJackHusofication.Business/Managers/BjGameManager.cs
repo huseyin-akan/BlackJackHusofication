@@ -1,29 +1,17 @@
 ﻿using BlackJackHusofication.Business.Helpers;
-using BlackJackHusofication.Model.Logs;
 using BlackJackHusofication.Model.Models;
-using Newtonsoft.Json.Linq;
 
 namespace BlackJackHusofication.Business.Managers;
 
 public class BjGameManager : IGameManager
 {
-    static readonly List<BjRoom> rooms = [];
+    readonly BjGame _game;
 
-    public static void CreateNewRoom(string roomName, int roomId)
+    public async static Task StartGame(BjGame room, CancellationToken cancellationToken)
     {
-        BjRoom room = new() { Name = roomName, RoomId = roomId };
-        room.Table.Deck = DeckHelper.CreateFullDeck(6);
-        DeckHelper.ShuffleDecks(room.Table.Deck);
-        rooms.Add(room);
-    }
-
-    public async static Task StartGame(BjRoom room)
-    {
-        bool exitGame = false;
-        while (exitGame)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var startNewRound = await AcceptTheBets(room);
-            if (!startNewRound) continue;
+
 
             room.RoundNo++;
             DealTheCards(room);
@@ -32,16 +20,14 @@ public class BjGameManager : IGameManager
         }
     }
 
-    private async static Task<bool> AcceptTheBets(BjRoom room)
+    public async Task<bool> AcceptTheBets(CancellationToken cancellationToken)
     {
-        room.IsAcceptingBets = true;
-        await Task.Delay(30_000);
-        room.IsAcceptingBets = false;
+        await Task.Delay(30_000, cancellationToken);
 
-        return room.Table.Players.Any(x => x.HasBetted);
+        return _game.Table.Players.Any(x => x.HasBetted);
     }
 
-    public static void PlayerBet(Player player, BjRoom room, decimal betAmount)
+    public static void PlayerBet(Player player, BjGame room, decimal betAmount)
     {
         player.HasBetted = true;
         player.Balance -= betAmount;
@@ -49,7 +35,7 @@ public class BjGameManager : IGameManager
         room.Table.Balance += betAmount;
     }
 
-    private static void DealTheCards(BjRoom room)
+    private static void DealTheCards(BjGame room)
     {
         if (room.Table.IsShoeShouldChange)
         {
@@ -70,7 +56,7 @@ public class BjGameManager : IGameManager
         }
     }
 
-    private static void DealCard(BjRoom room, Hand hand)
+    private static void DealCard(BjGame room, Hand hand)
     {
         var card = room.Table.Deck[0];
         room.Table.Deck.Remove(card);
@@ -90,7 +76,7 @@ public class BjGameManager : IGameManager
         else if (hand.HandValue == 21 && hand.Cards.Count == 2) hand.IsBlackJack = true;
     }
 
-    private static async Task AskAllPlayersForActions(BjRoom room)
+    private static async Task AskAllPlayersForActions(BjGame room)
     {
         foreach (var player in room.Table.Players.Where(x => x.HasBetted))
         {

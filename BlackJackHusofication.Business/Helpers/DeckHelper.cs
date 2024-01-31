@@ -2,7 +2,7 @@
 
 namespace BlackJackHusofication.Business.Helpers;
 
-class DeckHelper
+public class DeckHelper
 {
     public static List<Card> CreateFullDeck(int deckCount)
     {

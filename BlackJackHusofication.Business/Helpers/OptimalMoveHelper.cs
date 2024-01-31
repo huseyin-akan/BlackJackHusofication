@@ -1,8 +1,9 @@
-﻿using BlackJackHusofication.Model.Models;
+﻿using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Model.Models;
 
-namespace BlackJackHusofication.Business.Managers;
+namespace BlackJackHusofication.Business.Helpers;
 
-public class OptimalMoveManager
+public class OptimalMoveHelper
 {
     public static CardAction MakeOptimalMove(Card dealerCard, Hand playerHand, bool isSplitHand = false)
     {

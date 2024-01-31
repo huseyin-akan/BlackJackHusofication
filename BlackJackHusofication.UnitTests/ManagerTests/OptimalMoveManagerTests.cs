@@ -1,4 +1,5 @@
-﻿using BlackJackHusofication.Business.Managers;
+﻿using BlackJackHusofication.Business.Helpers;
+using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.UnitTests.ManagerTests;
@@ -28,14 +29,14 @@ public class OptimalMoveManagerTests
     [InlineData(CardValue.Ace, CardValue.Ace, true, CardAction.Hit)]
     public void ShouldMakeOptimalMoveForPairsWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2, bool isSplitHand, CardAction expectedCardAction)
     {
-        Dealer dealer = new() { Id= 0, Name="Dealer"};
+        Dealer dealer = new() { Id= 0.ToString(), Name="Dealer"};
         dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two) );
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
         playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
 
-        var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand, isSplitHand);
+        var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand, isSplitHand);
 
         Assert.True(actualAction == expectedCardAction);
     }
@@ -51,14 +52,14 @@ public class OptimalMoveManagerTests
     [InlineData(CardValue.Ace, CardValue.Nine, CardAction.Stand)]
     public void ShouldMakeOptimalMoveForSoftHandWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2,CardAction expectedCardAction)
     {
-        Dealer dealer = new() { Id = 0, Name = "Dealer" };
+        Dealer dealer = new() { Id = 0.ToString(), Name = "Dealer" };
         dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two));
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
         playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
 
-        var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
+        var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
 
         Assert.True(actualAction == expectedCardAction);
     }
@@ -83,14 +84,14 @@ public class OptimalMoveManagerTests
     [InlineData(CardValue.Jack, CardValue.Ace, CardAction.Stand)]
     public void ShouldMakeOptimalMoveForHandWhenDealerHasTwo(CardValue cardValue1, CardValue cardValue2, CardAction expectedCardAction)
     {
-        Dealer dealer = new() { Id = 0, Name = "Dealer" };
+        Dealer dealer = new() { Id = 0.ToString(), Name = "Dealer" };
         dealer.Hand.Cards.Add(new(CardType.Hearts, CardValue.Two));
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
         playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
 
-        var actualAction = OptimalMoveManager.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
+        var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
 
         Assert.True(actualAction == expectedCardAction);
     }

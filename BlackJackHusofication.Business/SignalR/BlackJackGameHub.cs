@@ -83,12 +83,29 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         await Clients.Caller.GetAllBjRooms(roomManager.GetRooms() );
     }
 
+    public async Task PlayerBet(string roomName, decimal betAmount)
+    {
+        var player = roomManager.GetSittingPlayer(roomName, Context.ConnectionId);
+        var game = roomManager.GetGame(roomName);
+        
+        //player bets
+        game.PlayerBet(player, betAmount);
+
+        //send all players in the room a notification about player's bet
+        var bettingNotificationTask = Clients.Group(roomName).PlayerBet(betAmount);
+
+        //if there is no any player left who hasnt betted yet, cancel count-down.
+        if(!game.Table.Players.Any(x => !x.HasBetted) ) game.CancellationTokenSource.Cancel();
+        
+        await bettingNotificationTask;
+    }
+
     public async Task PlayerAction(CardAction action, string roomName)
     {
-        var room = roomManager.GetRoom(roomName);
+        var room = roomManager.GetGame(roomName);
         
         // Cancel the timeout when the player makes a move
-        room._cancellationTokenSource.Cancel();
+        room.CancellationTokenSource.Cancel();
 
         //TODO-HUS handle the action here.
 

@@ -9,7 +9,7 @@ namespace BlackJackHusofication.Business.Managers;
 //Note: in this mode, 7 players play the most optimal moves. And Husoka bets behind.
 public class BjSimulationManager : IGameManager
 {
-    private readonly BjRoom bjRoom; //TODO-HUS aşağıdaki simulation objesi uçacak. Yerine BjRoom gelecek.
+    private readonly BjGame bjRoom; //TODO-HUS aşağıdaki simulation objesi uçacak. Yerine BjRoom gelecek.
     private readonly BjSimulation _simulation;
     private readonly IGameLogger loggerService;
 
@@ -192,7 +192,7 @@ public class BjSimulationManager : IGameManager
     private CardAction AskForAction(Hand? hand, bool isSplitHand = false)
     {
         if (hand is null) return CardAction.Stand;
-        return OptimalMoveManager.MakeOptimalMove(_simulation.Dealer.Hand.Cards[0], hand, isSplitHand);
+        return OptimalMoveHelper.MakeOptimalMove(_simulation.Dealer.Hand.Cards[0], hand, isSplitHand);
     }
 
     private async Task StartNewRound()

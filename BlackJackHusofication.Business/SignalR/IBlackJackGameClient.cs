@@ -1,4 +1,5 @@
-﻿using BlackJackHusofication.Model.Logs;
+﻿using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Model.Logs;
 using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.Business.SignalR;
@@ -11,9 +12,11 @@ public interface IBlackJackGameClient
     Task UpdateSimulation(BjSimulation simulation);
     Task SendLog(SimulationLog logMessage);
     Task GetAllBjRooms(List<string> bjRooms);
-    Task PlayerJoinedRoom(BjRoom bjRoom);
-    Task PlayerLeftRoom(BjRoom bjRoom);
-    Task SitPlayer(BjRoom bjRoom);
-    Task PlayerLeaveTable(BjRoom bjRoom);
+    Task PlayerJoinedRoom(BjGame bjRoom);
+    Task PlayerLeftRoom(BjGame bjRoom);
+    Task SitPlayer(BjGame bjRoom);
+    Task PlayerLeaveTable(BjGame bjRoom);
     Task PlayerAction(CardAction action);
+    Task PlayerBet(decimal betAmount);
+    Task NotifyCountDown(CountDownNotification notification);
 }
