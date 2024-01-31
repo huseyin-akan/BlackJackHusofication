@@ -1,4 +1,5 @@
 using BlackJackHusofication.Business;
+using BlackJackHusofication.Business.BackgrounServices;
 using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Business.Services.Abstracts;
 using BlackJackHusofication.Business.Services.Concretes;
@@ -46,5 +47,7 @@ app.MapHub<BlackJackGameHub>("/bj-game");
 app.MapHub<BlackJackSimulHub>("/bj-simul");
 
 app.MapControllers();
+
+await BackGroundServiceRegistration.StartAllServices(app.Services);
 
 app.Run();

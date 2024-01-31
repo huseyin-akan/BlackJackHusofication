@@ -17,11 +17,11 @@ public class BjRunnerService(IServiceProvider services, int roomId) : Background
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            Interlocked.Increment(ref count); //TODO-HUS bunun ne olduğunu araştıralım.
             await Task.Delay(3000, stoppingToken);
             var message = $"Count is : {count} - Room number is {_roomId}: {DateTime.Now:HH:mm}";
             await _hubContext.Clients.All.SendLog(new() { Message = message });
             _logger.LogInformation(message: message);
+            Interlocked.Increment(ref count); //TODO-HUS bunun ne olduğunu araştıralım.
         }
     }
 }
