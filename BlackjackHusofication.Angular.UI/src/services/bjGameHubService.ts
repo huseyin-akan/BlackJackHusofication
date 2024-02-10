@@ -3,7 +3,9 @@ import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { SimulationLog } from '../models/log-models/simulationLogs';
 import { BjSimulation } from '../models/bjSimulation';
-import { BjRoom } from '../models/bjRoom';
+import { BjGame } from '../models/bjGame';
+import { Card } from '../models/card';
+import { DealCardAction } from '../models/actions/dealCardAction';
 
 @Injectable({
   providedIn: 'root',
@@ -14,12 +16,14 @@ export class BjGameHubService {
   private logSubject = new Subject<SimulationLog>();
   private bjSimulationSubject = new Subject<BjSimulation>();
   private roomsSubject = new Subject<string[]>();
-  private activeRoomSubject = new Subject<BjRoom>();
+  private activeRoomSubject = new Subject<BjGame>();
+  private cardDealAction = new Subject<DealCardAction>();
 
   log$ = this.logSubject.asObservable();
   bjSimulation$ = this.bjSimulationSubject.asObservable();
   rooms$ = this.roomsSubject.asObservable();
   activeRoom$ = this.activeRoomSubject.asObservable();
+  cardsToDeal$ = this.cardDealAction.asObservable();
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -41,12 +45,16 @@ export class BjGameHubService {
       this.roomsSubject.next(rooms);
     });
 
-    this.hubConnection.on('PlayerJoinedRoom', (room: BjRoom) => {
+    this.hubConnection.on('PlayerJoinedRoom', (room: BjGame) => {
       this.activeRoomSubject.next(room);
     });
 
-    this.hubConnection.on('SitPlayer', (room: BjRoom) => {
+    this.hubConnection.on('SitPlayer', (room: BjGame) => {
       this.activeRoomSubject.next(room);
+    });
+
+    this.hubConnection.on('DealCard', (action: DealCardAction) => {
+      this.cardDealAction.next(action);
     });
 
     this.hubConnection.onreconnecting(error => {

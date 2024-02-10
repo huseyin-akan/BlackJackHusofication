@@ -3,7 +3,7 @@ import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { SimulationLog } from '../models/log-models/simulationLogs';
 import { BjSimulation } from '../models/bjSimulation';
-import { BjRoom } from '../models/bjRoom';
+import { BjGame } from '../models/bjGame';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +13,7 @@ export class BjSimulHubService {
 
   private logSubject = new Subject<SimulationLog>();
   private bjSimulationSubject = new Subject<BjSimulation>();
-  private roomsSubject = new Subject<BjRoom[]>();
+  private roomsSubject = new Subject<BjGame[]>();
 
   log$ = this.logSubject.asObservable();
   bjSimulation$ = this.bjSimulationSubject.asObservable();
@@ -35,7 +35,7 @@ export class BjSimulHubService {
       this.bjSimulationSubject.next(info);
     });
 
-    this.hubConnection.on('GetAllBjRooms', (rooms: BjRoom[]) => {
+    this.hubConnection.on('GetAllBjRooms', (rooms: BjGame[]) => {
       this.roomsSubject.next(rooms);
     });
 

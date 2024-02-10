@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { BjGameHubService } from '../../../../../services/bjGameHubService';
-import { BjRoom } from '../../../../../models/bjRoom';
+import { BjGame } from '../../../../../models/bjGame';
 
 @Component({
   selector: 'app-bj-rooms',
@@ -9,7 +9,7 @@ import { BjRoom } from '../../../../../models/bjRoom';
 })
 export class BjRoomsComponent {
   rooms: string[] = [];
-  activeRoom: BjRoom;
+  activeRoom: BjGame;
 
   constructor(private bjGameHubService: BjGameHubService) {}
 

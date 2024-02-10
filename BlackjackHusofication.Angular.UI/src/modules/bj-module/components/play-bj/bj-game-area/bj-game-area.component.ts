@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BjRoom } from '../../../../../models/bjRoom';
+import { BjGame } from '../../../../../models/bjGame';
 import { BjGameHubService } from '../../../../../services/bjGameHubService';
 
 @Component({
@@ -9,17 +9,20 @@ import { BjGameHubService } from '../../../../../services/bjGameHubService';
 })
 export class BjGameAreaComponent {
   players: boolean[] = Array(7).fill(false); 
-  dealerOccupied: boolean = false;
-  activeRoom :BjRoom ;
+  activeRoom :BjGame ;
 
   constructor(private bjGameHubService :BjGameHubService){}
 
   ngOnInit(){
-
     this.bjGameHubService.joinGroup("Blackjack - 1");
 
     this.bjGameHubService.activeRoom$.subscribe(room => {
       this.activeRoom = room
+
+      if(this.activeRoom.isDealingAllCards){
+        
+      }
+
       console.log(room)
     });
   }
@@ -38,11 +41,7 @@ export class BjGameAreaComponent {
     this.players[index] = false;
   }
 
-  sitDealer(): void {
-    this.dealerOccupied = true;
-  }
+  dealAllCards(){
 
-  standDealer(): void {
-    this.dealerOccupied = false;
   }
 }
