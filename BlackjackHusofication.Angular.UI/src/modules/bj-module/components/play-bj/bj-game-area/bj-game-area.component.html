@@ -1,3 +1,21 @@
+<div class="bj-container-temp">
+    <div class="bj-counter"> 
+        {{bjCounter}}
+        <br>
+    </div>
+    <div class="bj-counter"> 
+        {{bjCounterForAction}}
+        <br>
+    </div>
+    
+    <div>
+        <button *ngIf="isBtnHitShow" mat-fab color="primary" (click)="playAction('Hit')"> Hit </button>
+        <button *ngIf="isBtnStandShow" mat-fab color="primary" (click)="playAction('Stand')"> Stand </button>
+        <button *ngIf="isBtnDoubleShow" mat-fab color="primary" (click)="playAction('Double')"> Double </button>
+        <button *ngIf="isBtnSplitShow" mat-fab color="primary" (click)="playAction('Split')"> Split </button>
+    </div>
+</div>
+
 <div class="bj-container">
     <div class="blackjack-table">
         <!-- Dealer Slot -->
@@ -7,12 +25,12 @@
             </div>
             <div class="dealer-slots">
                 <div class="dealer-card-slot">
-                    <img *ngIf="activeRoom" class="animated-image"
+                    <img *ngIf="activeRoom && activeRoom?.table?.dealer?.hand?.cards[0]?.cardImg" class="animated-image"
                         [src]="'assets/images/deck/' + activeRoom?.table?.dealer?.hand?.cards[0]?.cardImg">
-                    <img *ngIf="!activeRoom" class="animated-image" src="assets/images/deck/d_12.svg">
                 </div>
                 <div class="dealer-card-slot">
-                    <img class="animated-image" src="assets/images/deck/card-back.jpg">
+                    <img *ngIf="activeRoom && activeRoom?.table?.dealer?.hand?.cards[1]?.cardImg" 
+                    class="animated-image" src="assets/images/deck/card-back.jpg">
                 </div>
             </div>
         </div>
@@ -21,8 +39,13 @@
         <div class="player-slots">
             <div class="player" *ngFor="let spot of activeRoom?.table?.spots; let i = index">
                 <div class="player-title" [hidden]="!spot">Player {{ i + 1 }}</div>
-                <div class="player-slot"></div>
-                <div class="player-card-value">12</div>
+                <div class="player-slot">
+                    <div *ngFor="let card of spot.hand.cards; let i = index">
+                        <img *ngIf="card?.cardImg" class="animated-image"
+                     [src]="'assets/images/deck/' + card?.cardImg">
+                    </div>
+                </div>
+                <div class="player-card-value">{{spot.hand.handValue}}</div>
                 <button *ngIf="!spot.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
                     aria-label="Example icon button with a delete icon">
                     <mat-icon>add_circle</mat-icon>

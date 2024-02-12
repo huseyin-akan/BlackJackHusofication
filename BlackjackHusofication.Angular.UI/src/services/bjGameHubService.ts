@@ -4,8 +4,11 @@ import { Subject } from 'rxjs';
 import { SimulationLog } from '../models/log-models/simulationLogs';
 import { BjSimulation } from '../models/bjSimulation';
 import { BjGame } from '../models/bjGame';
-import { Card } from '../models/card';
-import { DealCardAction } from '../models/actions/dealCardAction';
+import { CountDownNotification } from '../models/notifications/countDownNotification';
+import { CardDealNotification } from '../models/notifications/cardDealNotification';
+import { Table } from '../models/table';
+import { CardAction } from '../models/card';
+import { AwaitingCardActionNotification } from '../models/notifications/awaitingCardActionNotification';
 
 @Injectable({
   providedIn: 'root',
@@ -13,17 +16,23 @@ import { DealCardAction } from '../models/actions/dealCardAction';
 export class BjGameHubService {
   private hubConnection: signalR.HubConnection;
 
+  private activeRoom :BjGame;
+
   private logSubject = new Subject<SimulationLog>();
   private bjSimulationSubject = new Subject<BjSimulation>();
   private roomsSubject = new Subject<string[]>();
   private activeRoomSubject = new Subject<BjGame>();
-  private cardDealAction = new Subject<DealCardAction>();
+  private countDownNotification = new Subject<CountDownNotification>();
+  private cardDealNotifiation = new Subject<CardDealNotification>();
+  private awaitCardActionNotification = new Subject<AwaitingCardActionNotification>();
 
   log$ = this.logSubject.asObservable();
   bjSimulation$ = this.bjSimulationSubject.asObservable();
   rooms$ = this.roomsSubject.asObservable();
   activeRoom$ = this.activeRoomSubject.asObservable();
-  cardsToDeal$ = this.cardDealAction.asObservable();
+  countDownNotification$ = this.countDownNotification.asObservable();
+  cardDealNotifiation$ = this.cardDealNotifiation.asObservable();
+  awaitCardActionNotification$ = this.awaitCardActionNotification.asObservable();
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -46,15 +55,40 @@ export class BjGameHubService {
     });
 
     this.hubConnection.on('PlayerJoinedRoom', (room: BjGame) => {
+      this.activeRoom = room;
       this.activeRoomSubject.next(room);
     });
 
     this.hubConnection.on('SitPlayer', (room: BjGame) => {
+      this.activeRoom = room;
       this.activeRoomSubject.next(room);
     });
 
-    this.hubConnection.on('DealCard', (action: DealCardAction) => {
-      this.cardDealAction.next(action);
+    //Updates:
+    this.hubConnection.on('UpdateTable', (table: Table) => {
+      this.activeRoom.table = table;
+      this.activeRoomSubject.next(this.activeRoom);
+    });
+
+    // this.hubConnection.on('UpdateHand', (hand: Hand) => {
+    //   this.updateHand.next(hand);
+    // });
+
+    //Notifications:
+    this.hubConnection.on('NotifyCountDown', (notification: CountDownNotification) => {
+      this.countDownNotification.next(notification);
+    });
+
+    this.hubConnection.on('NotifyCardDeal', (notification: CardDealNotification) => {
+      this.cardDealNotifiation.next(notification);
+    });
+
+    this.hubConnection.on('NotifyAwaitingCardAction', (notification: AwaitingCardActionNotification) => {
+      this.awaitCardActionNotification.next(notification);
+    });
+
+    this.hubConnection.on('RoundStarted', (roundNumber : number) => {
+      
     });
 
     this.hubConnection.onreconnecting(error => {
@@ -110,5 +144,10 @@ export class BjGameHubService {
   playerBet(roomName : string, spotId: number, betAmount : number){
     return this.hubConnection
       .invoke('PlayerBet', roomName, spotId, betAmount);  
+  }
+
+  playCardAction(action: CardAction, roomName: string, spotNo: number, isForSplittedHand : boolean = false){
+    return this.hubConnection
+      .invoke('PlayCardAction', action, roomName, spotNo, isForSplittedHand);  
   }
 }

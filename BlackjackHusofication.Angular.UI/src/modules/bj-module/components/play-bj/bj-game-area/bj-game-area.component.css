@@ -2,6 +2,13 @@
     display: flex;
     justify-content: center;
   }
+
+  .bj-container-temp {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
   
   .blackjack-table {
     background-color: green;
@@ -73,6 +80,13 @@
     border-radius : 1rem;
   }
 
+  .player-slot img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius : 1rem;
+  }
+
   .animated-image{
     opacity: 0;
     animation: fadeIn 1s ease-in-out forwards;
@@ -89,3 +103,8 @@
     }
   }
   
+  .bj-counter{
+    text-shadow: #5a5454;
+    font-size: larger;
+    color: #e646d0;
+  }

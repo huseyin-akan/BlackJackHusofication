@@ -11,8 +11,6 @@ public class BjGameManager : IGameManager
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-
-
             room.RoundNo++;
             DealTheCards(room);
 

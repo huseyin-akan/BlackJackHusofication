@@ -6,7 +6,7 @@ public class Spot
     public Hand Hand { get; set; }
     public Hand? SplittedHand { get; set; }
     public decimal BetAmount { get; set; }
-    public Player? Player { get; set; }
+    public Player? Player { get; set; } 
 
     public Spot()
     {

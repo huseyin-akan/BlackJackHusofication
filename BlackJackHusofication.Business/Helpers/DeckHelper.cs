@@ -17,7 +17,7 @@ public class DeckHelper
                 foreach (CardValue cardValue in Enum.GetValues(typeof(CardValue)))
                 {
                     if (cardValue == CardValue.ShufflerCard) continue;
-                    fullDeck.Add(new Card(cardType, cardValue, $"{cardType.ToString()[0].ToString().ToLower()}_{cardValue.ToString()[0]}.svg"));
+                    fullDeck.Add(new Card(cardType, cardValue, $"{cardType.ToString()[0].ToString().ToLower()}_{(int) cardValue}.svg"));
                 }
             }
         }

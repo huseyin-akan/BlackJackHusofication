@@ -30,7 +30,7 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     {
         var connectionId = Context.ConnectionId;
         var room = roomManager.AddPlayerToRoom(roomName, connectionId);
-        await Groups.AddToGroupAsync(connectionId, roomName);
+        await Groups.AddToGroupAsync(connectionId, roomName);  //TODO-HUS aynı oyuncunun 2 farklı yerden odasının yönetilmesi buglara sebep olabilir.
         await Clients.Caller.PlayerJoinedRoom(room);
     }
 
@@ -106,17 +106,19 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         await bettingNotificationTask;
     }
 
-    public async Task PlayerAction(CardAction action, string roomName)
+    public Task PlayCardAction(CardAction action, string roomName, int spotNo, bool isForSplittedHand = false)
     {
         var room = roomManager.GetGame(roomName);
-        
+
+        var spot = room.Table.Spots.FirstOrDefault(s => s.Id == spotNo) ?? throw new Exception("Olamamalı la bule bişi");
+
+        if (isForSplittedHand) spot.SplittedHand.NextCardAction = action;
+        else spot.Hand.NextCardAction = action;
+
         // Cancel the timeout when the player makes a move
         room.CancellationTokenSource.Cancel();
-
-        //TODO-HUS handle the action here.
-
-        // Handle player action
-        await Clients.All.PlayerAction(action);
+        room.CancellationTokenSource.Token.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
     }
 }
 

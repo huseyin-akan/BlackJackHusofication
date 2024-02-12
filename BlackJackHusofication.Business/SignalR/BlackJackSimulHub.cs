@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 
 namespace BlackJackHusofication.Business.SignalR;
-public class BlackJackSimulHub : Hub<IBlackJackGameClient>
+public class BlackJackSimulHub : Hub<IBlackJackSimulClient>
 {
     static readonly List<string> clients = []; 
     public override async  Task OnConnectedAsync() //bir client bağlanınca

@@ -7,6 +7,7 @@ public class Hand
     public bool IsBusted { get; set; }
     public bool IsSoft { get; set; }
     public int HandValue { get; set; }  //HandValue cannot be updated from outside.
+    public CardAction? NextCardAction { get; set; }
 
     public Hand()
     {
