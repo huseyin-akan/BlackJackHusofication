@@ -110,4 +110,13 @@ internal class BalanceManager
 
         spot.BetAmount = betAmount;
     }
+
+    public static void PlayerDouble(Spot spot, Table table)
+    {
+        ArgumentNullException.ThrowIfNull(spot.Player);
+
+        spot.Player.Balance -= spot.BetAmount;
+        table.Balance += spot.BetAmount;
+        spot.BetAmount *= 2;
+    }
 }

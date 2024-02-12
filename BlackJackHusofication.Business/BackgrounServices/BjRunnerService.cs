@@ -244,7 +244,7 @@ public class BjRunnerService : BackgroundService
         {
             CardAction.Stand => ApplyStand(), 
             CardAction.Hit => await ApplyHit(spot, hand),
-            CardAction.Double => await ApplyDouble(spot.Player, spot.Hand),
+            CardAction.Double => await ApplyDouble(spot, hand),
             CardAction.Split => await ApplySplit(spot.Player),
             _ => throw new Exception("La nasıl olur bu!!!")
         };
@@ -278,15 +278,12 @@ public class BjRunnerService : BackgroundService
         return hand.HandValue < 21;
     }
 
-    private async Task<bool> ApplyDouble(Player player, Hand hand)
+    private async Task<bool> ApplyDouble(Spot spot, Hand hand)
     {
-        //DealCard(hand);
-        //player.Balance -= hand.BetAmount;
-        //_simulation.Dealer.Balance += hand.BetAmount;
-        //hand.BetAmount *= 2;
+        var cardDealing = DealCard(hand, spot.Id);
+        BalanceManager.PlayerDouble(spot, _game.Table);
 
-        //SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} doubles. Now the hand is : {hand.HandValue}" };
-        //await loggerService.LogMessage(log2);
+        await cardDealing;
         return false;
     }
 }
