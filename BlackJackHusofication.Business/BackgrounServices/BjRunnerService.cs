@@ -212,7 +212,7 @@ public class BjRunnerService : BackgroundService
             {
                 try
                 {
-                    for (int i = 0; i < ACTION_TIME; i++) //each second
+                    for (int i = 0; i < ACTION_TIME; i++)
                     {
                         var delayTask = Task.Delay(1_000, cancellationToken);
                         var notificationTask = _hubContext.Clients.Group(_game.Name)
@@ -245,7 +245,7 @@ public class BjRunnerService : BackgroundService
             CardAction.Stand => ApplyStand(), 
             CardAction.Hit => await ApplyHit(spot, hand),
             CardAction.Double => await ApplyDouble(spot, hand),
-            CardAction.Split => await ApplySplit(spot.Player),
+            CardAction.Split => await ApplySplit(spot),
             _ => throw new Exception("La nasıl olur bu!!!")
         };
     }
@@ -255,21 +255,19 @@ public class BjRunnerService : BackgroundService
         return false;
     }
 
-    private async Task<bool> ApplySplit(Player player)
+    private async Task<bool> ApplySplit(Spot spot)
     {
-        //player.SplittedHand = new Hand();
-        //var splitCard = player.Hand.Cards[1];
-        //player.Hand.Cards.Remove(splitCard);
-        //player.SplittedHand.Cards.Add(splitCard);
+        spot.SplittedHand = new Hand();
+        var splitCard = spot.Hand.Cards[1];
+        spot.Hand.Cards.Remove(splitCard);
+        spot.SplittedHand.Cards.Add(splitCard);
 
-        //player.SplittedHand.HandValue = CardManager.GetCountOfHand(player.SplittedHand);
-        //player.Hand.HandValue = CardManager.GetCountOfHand(player.Hand);
-        //SimulationLog log = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name} splits the cards. Now the first hand is : {player.Hand.HandValue} and the second hand is : {player.SplittedHand.HandValue}" };
-        //await loggerService.LogMessage(log);
-        //DealCard(player.Hand);
-        //SimulationLog log2 = new() { LogType = SimulationLogType.CardActionLog, Message = $"{player.Name}'s new card is {player.Hand.Cards[1].CardValue}. Now the first hand is : {player.Hand.HandValue}" };
-        //await loggerService.LogMessage(log2);
-        return false;
+        spot.SplittedHand.HandValue = CardManager.GetCountOfHand(spot.SplittedHand);
+        spot.Hand.HandValue = CardManager.GetCountOfHand(spot.Hand);
+        
+        await DealCard(spot.Hand, spot.Id);
+        await DealCard(spot.SplittedHand, spot.Id);
+        return true; //TODO-HUs burası false idi. Bir hata mı vardı acaba?
     }
 
     private async Task<bool> ApplyHit(Spot spot, Hand hand)
