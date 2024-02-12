@@ -28,11 +28,10 @@ public class BjRunnerService : BackgroundService
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("oyun başladı dostum");
         await Task.Delay(10_000, stoppingToken); //We wait for 10 seconds in the beginning of the game
         var cancellationToken = _game.CancellationTokenSource.Token;
 
-        _logger.LogInformation("10 sn geçti. Hadi bakalım");
+        _logger.LogInformation("oyun başladı dostum. Let's gooo");
 
         //Game Loop
         while (!stoppingToken.IsCancellationRequested)
@@ -201,6 +200,8 @@ public class BjRunnerService : BackgroundService
                     _game.CancellationTokenSource = new CancellationTokenSource();
                     cancellationToken = _game.CancellationTokenSource.Token;
                 }
+                //If no action is taken in the time, then stand is played
+                spot.Hand.NextCardAction ??= CardAction.Stand;
 
                 shouldAskForNormalHand = await ApplyPlayerAction(spot);
                 spot.Hand.NextCardAction = null;
