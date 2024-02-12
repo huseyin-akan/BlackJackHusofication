@@ -228,6 +228,9 @@ public class BjRunnerService : BackgroundService
                     _game.CancellationTokenSource = new CancellationTokenSource();
                     cancellationToken = _game.CancellationTokenSource.Token;
                 }
+                
+                //If no action is taken in the time, then stand is played
+                spot.SplittedHand!.NextCardAction ??= CardAction.Stand;
 
                 shouldAskForSplitHand = await ApplyPlayerAction(spot, true);
                 spot.SplittedHand!.NextCardAction = null;
