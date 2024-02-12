@@ -56,17 +56,13 @@ public class BjRunnerService : BackgroundService
             //We should ask for actions. Each action has 30 seconds timeout. If no action is taken, stand is played.
             await AskAllPlayersForActions();
 
+            //Play for dealer
+            await PlayForDealer();
+
             //After all players are asked for actions, we calculate the earnings.
+            //BalanceManager.CheckHandsAndDeliverPrizes(_simulation.Players.Where(x => x.HasBetted), _simulation.Dealer, _simulation.Husoka);
 
-            //We update balances of each player and end the round.
-
-
-
-            var message = $"Room number is {_game.RoomId}: {DateTime.Now:HH:mm}";
-            await _hubContext.Clients.All.SendLog(new() { Message = message });
-            _logger.LogInformation(message: message);
-
-            //Round is over, we should reset the values.
+            //Round is over, we should collect the cards, reset the values.
             ResetAfterRoundEnd();
         }
 
@@ -76,6 +72,9 @@ public class BjRunnerService : BackgroundService
 
     private void ResetAfterRoundEnd()
     {
+        //CollectAllCards();
+        //TODO-HUS
+
         foreach (var spot in _game.Table.Spots.Where(p => p.BetAmount != 0))
         {
             spot.BetAmount = 0;
@@ -283,5 +282,21 @@ public class BjRunnerService : BackgroundService
 
         await cardDealing;
         return false;
+    }
+
+    private async Task PlayForDealer()
+    {
+        //Open dealer's card.
+        //TODO-HUS
+
+        //If everyone is busted, dealer wins. 
+        if (!_game.Table.Spots.Any(x => !x.Hand.IsBusted)
+            && !_game.Table.Spots.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
+
+        //Otherwise dealers opens card and hits until at least 17
+        while (_game.Table.Dealer.Hand.HandValue < 17)
+        {
+            await DealCard(_game.Table.Dealer.Hand,0);
+        }
     }
 }
