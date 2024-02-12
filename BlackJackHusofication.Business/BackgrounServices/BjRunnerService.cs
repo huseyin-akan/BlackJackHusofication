@@ -78,7 +78,7 @@ public class BjRunnerService : BackgroundService
     {
         foreach (var spot in _game.Table.Spots.Where(p => p.BetAmount != 0))
         {
-            //spot.BetAmount = 0;
+            spot.BetAmount = 0;
             spot.Hand = new();
             spot.SplittedHand = null;
         }
@@ -204,6 +204,7 @@ public class BjRunnerService : BackgroundService
                 }
 
                 shouldAskForNormalHand = await ApplyPlayerAction(spot);
+                spot.Hand.NextCardAction = null;
             }
 
             var shouldAskForSplitHand = spot.SplittedHand is not null;
@@ -229,6 +230,7 @@ public class BjRunnerService : BackgroundService
                 }
 
                 shouldAskForSplitHand = await ApplyPlayerAction(spot, true);
+                spot.SplittedHand!.NextCardAction = null;
             }
 
             if (spot.Hand.HandValue > 21) spot.Hand.IsBusted = true;

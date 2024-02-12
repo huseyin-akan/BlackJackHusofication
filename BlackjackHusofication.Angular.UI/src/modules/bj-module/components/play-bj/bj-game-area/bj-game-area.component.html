@@ -40,8 +40,8 @@
             <div class="player" *ngFor="let spot of activeRoom?.table?.spots; let i = index">
                 <div class="player-title" [hidden]="!spot">Player {{ i + 1 }}</div>
                 <div class="player-slot">
-                    <div *ngFor="let card of spot.hand.cards; let i = index">
-                        <img *ngIf="card?.cardImg" class="animated-image"
+                    <div class="card-stack" *ngFor="let card of spot.hand.cards; let i = index" >
+                        <img *ngIf="card?.cardImg" class="animated-image" [ngStyle]="{ '--index': i }"
                      [src]="'assets/images/deck/' + card?.cardImg">
                     </div>
                 </div>

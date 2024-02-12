@@ -100,7 +100,7 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         //if the table is full and there is no any spot left where bet is not registered, cancel count-down.
         if (game.Table.Spots.Count(x => x.Player is not null) == 7 && !game.Table.Spots.Any(x => x.BetAmount == 0)) {
             game.CancellationTokenSource.Cancel();
-            game.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS sadece yukarıki yetiyor olmalı
+            //game.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS sadece yukarıki yetiyor olmalı
         } 
         
         await bettingNotificationTask;
@@ -117,7 +117,7 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
 
         // Cancel the timeout when the player makes a move
         room.CancellationTokenSource.Cancel();
-        room.CancellationTokenSource.Token.ThrowIfCancellationRequested();
+        //room.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS bu olmadan çalışıyor sanki.
         return Task.CompletedTask;
     }
 }
