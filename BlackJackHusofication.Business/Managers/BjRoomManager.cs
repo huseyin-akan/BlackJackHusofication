@@ -21,7 +21,6 @@ public class BjRoomManager
         room.Players.Add(newPlayer);
         return room;
     }
-
     
     public BjGame RemovePlayerFromRoom(string roomName, string connectionId)
     {

@@ -30,7 +30,6 @@ public class BjRunnerService : BackgroundService
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Delay(10_000, stoppingToken); //We wait for 10 seconds in the beginning of the game
-        var cancellationToken = _game.CancellationTokenSource.Token;
 
         _logger.LogInformation("oyun başladı dostum. Let's gooo");
 
@@ -38,11 +37,15 @@ public class BjRunnerService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("Hadi lan kekolar bet atın");
+            
+            _game.CancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _game.CancellationTokenSource.Token;
 
             //We give to the players 30 seconds to bet. 
             var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 15, cancellationToken);
             if (!startNewRound) continue;
 
+            _game.CancellationTokenSource = new CancellationTokenSource();
             cancellationToken = _game.CancellationTokenSource.Token;
             _logger.LogError("Bet atan bir keko var. Gel de paranı yiyim senin enayi!");
 
@@ -89,14 +92,14 @@ public class BjRunnerService : BackgroundService
                 continue;
             }
 
-            ntf = new() {PlayerId = spot.Player.Id, Earning = earning};
+            ntf = new() {PlayerId = spot.Player.Id, Earning = earning, Balance = spot.Player.Balance};
             ntf.Earning += earning;
         }
 
         //We notify each player about earnings.
         foreach (var result in results)
         {
-            await _hubContext.Clients.User(result.PlayerId).NotifyRoundWinnigs(result);
+            await _hubContext.Clients.Client(result.PlayerId).NotifyRoundWinnigs(result);
         }
     }
 

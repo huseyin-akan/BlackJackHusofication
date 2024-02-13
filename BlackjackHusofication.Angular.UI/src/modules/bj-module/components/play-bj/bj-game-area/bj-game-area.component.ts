@@ -4,6 +4,7 @@ import { BjGameHubService } from '../../../../../services/bjGameHubService';
 import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
 import { CardAction } from '../../../../../models/card';
+import { Player } from '../../../../../models/player';
 
 @Component({
   selector: 'app-bj-game-area',
@@ -13,7 +14,8 @@ import { CardAction } from '../../../../../models/card';
 export class BjGameAreaComponent {
   players: boolean[] = Array(7).fill(false); 
   activeRoom :BjGame ;
-
+  currentUser: Player;
+  winningAmount : number;
 
   bjCounter : number = 0;
   bjCounterForAction : number = 0;
@@ -47,6 +49,11 @@ export class BjGameAreaComponent {
     this.bjGameHubService.awaitCardActionNotification$.subscribe(ntf => {
       this.bjCounterForAction = ntf.seconds;
       this.renderActionButtons(ntf.spotNo, ntf.isForSplitHand);
+    })
+
+    this.bjGameHubService.roundWinningsNotification$.subscribe(ntf => {
+      this.currentUser.balance = ntf.balance;
+      this.winningAmount = ntf.earning;
     })
   }
 

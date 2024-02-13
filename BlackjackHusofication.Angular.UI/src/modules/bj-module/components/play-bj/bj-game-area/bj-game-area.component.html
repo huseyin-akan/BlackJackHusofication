@@ -14,6 +14,15 @@
         <button *ngIf="isBtnDoubleShow" mat-fab color="primary" (click)="playAction('Double')"> Double </button>
         <button *ngIf="isBtnSplitShow" mat-fab color="primary" (click)="playAction('Split')"> Split </button>
     </div>
+
+    <div class="bj-counter"> 
+        {{currentUser?.balance}}
+        <br>
+    </div>
+    <div class="bj-counter"> 
+        Tebrikler {{winningAmount}} kazandınız!!
+        <br>
+    </div>
 </div>
 
 <div class="bj-container">
