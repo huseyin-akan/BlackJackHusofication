@@ -1,4 +1,5 @@
-﻿using BlackJackHusofication.Business.Managers;
+﻿using BlackJackHusofication.Business.Helpers;
+using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.Model.Models;
 using BlackJackHusofication.Model.Models.Notifications;
@@ -59,7 +60,7 @@ public class BjRunnerService : BackgroundService
             await PlayForDealer();
 
             //After all players are asked for actions, we calculate the earnings.
-            //BalanceManager.CheckHandsAndDeliverPrizes(_simulation.Players.Where(x => x.HasBetted), _simulation.Dealer, _simulation.Husoka);
+            await CalculateAndDeliverEarnings();
 
             //Round is over, we should collect the cards, reset the values.
             ResetAfterRoundEnd();
@@ -69,10 +70,48 @@ public class BjRunnerService : BackgroundService
         _logger.LogDebug("hadi bakalım");
     }
 
+    private async Task CalculateAndDeliverEarnings()
+    {
+        List<RoundWinningsNotification> results = [];
+
+        //We calculate each player's earnings.
+        foreach (var spot in _game.Table.Spots.Where(s => s.BetAmount > 0))
+        {
+            if (spot.Player is null) continue;
+
+            var earning = BalanceManager.CheckHandsAndDeliverPrizes(_game.Table, spot.Id);
+
+            //Oyuncunun daha önce sonucu döndüyse, sonucu ona eklicez. Aynı oyuncuya birden fazla bildirim atmak istemiyoruz.
+            var ntf = results.FirstOrDefault(r => r.PlayerId == spot.Player.Id);
+            if (ntf is not null)
+            {
+                ntf.Earning += earning;
+                continue;
+            }
+
+            ntf = new() {PlayerId = spot.Player.Id, Earning = earning};
+            ntf.Earning += earning;
+        }
+
+        //We notify each player about earnings.
+        foreach (var result in results)
+        {
+            await _hubContext.Clients.User(result.PlayerId).NotifyRoundWinnigs(result);
+        }
+    }
+
     private void ResetAfterRoundEnd()
     {
-        //CollectAllCards();
-        //TODO-HUS
+        CollectAllCards();
+
+        if (_game.Table.IsShoeShouldChange)
+        {
+            List<Card> collectedShoe = [.. _game.Table.PlayedCards, .. _game.Table.Deck, _game.Table.ShufflerCard!];
+            _game.Table.Deck = DeckHelper.ShuffleDecks(collectedShoe);
+            _game.Table.PlayedCards = [];
+            _game.Table.ShufflerCard = null;
+            _game.Table.IsShoeShouldChange = false;
+        }
 
         foreach (var spot in _game.Table.Spots.Where(p => p.BetAmount != 0))
         {
@@ -81,12 +120,27 @@ public class BjRunnerService : BackgroundService
             spot.SplittedHand = null;
         }
         _game.Table.Dealer.Hand = new();
-
-        if (_game.Table.ShufflerCard is not null)
-        {
-            //TODO-HUS re-shuffle deck.
-        }
+        
         _allPlayers.UpdateTable(_game.Table);
+    }
+
+    private void CollectAllCards()
+    {
+        _game.Table.PlayedCards.AddRange(_game.Table.Dealer.Hand.Cards);
+        _game.Table.Dealer.Hand = new();
+
+        foreach (var spot in _game.Table.Spots.Where(s => s.BetAmount > 0) )
+        {
+            _game.Table.PlayedCards.AddRange(spot.Hand.Cards);
+            spot.Hand = new();
+            
+            if(spot.SplittedHand is not null) {
+                _game.Table.PlayedCards.AddRange(spot.SplittedHand.Cards);
+                spot.SplittedHand = null;
+            }
+
+            spot.BetAmount = 0;
+        };
     }
 
     private async Task<bool> CheckIfPlayersBetInTime(BjEventType eventType, int seconds, CancellationToken cancellationToken)
@@ -139,7 +193,7 @@ public class BjRunnerService : BackgroundService
 
         if (card.CardType == CardType.ShufflerCard)
         {
-            _game.Table.IsShoeShouldChange = true;
+            _game.Table.IsShoeShouldChange = true; //TODO-HUS buna gerek olmayabilir.
             _game.Table.ShufflerCard = card with { }; //We put aside the shuffler card.
             card = _game.Table.Deck[0]; //We deal a new card
             _game.Table.Deck.Remove(card);
@@ -268,6 +322,8 @@ public class BjRunnerService : BackgroundService
         spot.SplittedHand.HandValue = CardManager.GetCountOfHand(spot.SplittedHand);
         spot.Hand.HandValue = CardManager.GetCountOfHand(spot.Hand);
         
+        BalanceManager.PlayerSplit(spot, _game.Table);
+
         await DealCard(spot.Hand, spot.Id);
         await DealCard(spot.SplittedHand, spot.Id);
         return true; //TODO-HUs burası false idi. Bir hata mı vardı acaba?

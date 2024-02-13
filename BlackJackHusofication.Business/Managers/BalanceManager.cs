@@ -1,104 +1,97 @@
-﻿using BlackJackHusofication.Business.Helpers;
-using BlackJackHusofication.Model.Exceptions;
+﻿using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
+using BlackJackHusofication.Model.Models.Notifications;
 
 namespace BlackJackHusofication.Business.Managers;
 
 internal class BalanceManager
 {
-    public static void CheckHandsAndDeliverPrizes(IEnumerable<Player> players, Dealer dealer, Husoka husoka)
+    public static decimal CheckHandsAndDeliverPrizes(Table table, int spotId)
     {
-        //Hand playerHand;
-        //foreach (var player in players)
-        //{
-        //    decimal earning = 0;
-        //    playerHand = player.Hand;
+        var spot = table.Spots.FirstOrDefault(s => s.Id == spotId) ?? throw new Exception("Hata var aga");
+        
+        Hand currentHand;
+        decimal totalEarning = 0;
 
-        //    //TODO-HUS bir oyuncu patladığında, kasa da patlarsa beraberlik mi olur? Kasa normalde çekmez kazanır. Ama çoklu oyuncu olunca?
-        //    //player loses
-        //    if (playerHand.IsBusted)
-        //    {
-        //        LogHelper.WriteLine($"Unfortunately {player.Name} has lost the round", ConsoleColor.DarkRed);
-        //        player.LosingStreak++;
-        //        player.NotWinningStreak++;
-        //        player.WinningStreak = 0;
-        //    }
+        for (int i = 0; i < 2; i++)
+        {
+            if (spot.Player is null) continue;
 
-        //    //player has blackjack
-        //    else if (playerHand.IsBlackJack && !dealer.Hand.IsBlackJack)
-        //    {
-        //        earning = playerHand.BetAmount * 2.5M;
-        //        PayBackToPlayer(player, dealer, earning, husoka);
-        //        LogHelper.WriteLine($"Yaaay!! It is a blackjack!!! {player.Name} has won {earning} TL", ConsoleColor.Green);
-        //        player.LosingStreak = 0;
-        //        player.NotWinningStreak = 0;
-        //        player.WinningStreak++;
-        //    }
+            if (i == 0) currentHand = spot.Hand;
+            else if (spot.SplittedHand is null) continue;
+            else currentHand = spot.SplittedHand;
 
-        //    //player wins
-        //    else if (dealer.Hand.IsBusted || playerHand.HandValue > dealer.Hand.HandValue)
-        //    {
-        //        earning = playerHand.BetAmount * 2;
-        //        PayBackToPlayer(player, dealer, earning, husoka);
-        //        LogHelper.WriteLine($"Yess!! {player.Name} has won the round and won {earning} TL", ConsoleColor.Green);
-        //        player.LosingStreak = 0;
-        //        player.NotWinningStreak = 0;
-        //        player.WinningStreak++;
-        //    }
+            decimal earning = 0;
 
-        //    //dealer has blackjack player loses
-        //    else if (dealer.Hand.IsBlackJack)
-        //    {
-        //        LogHelper.WriteLine($"Fudgeee!! {player.Name} has lost the round", ConsoleColor.DarkRed);
-        //        player.LosingStreak++;
-        //        player.NotWinningStreak++;
-        //        player.WinningStreak = 0;
-        //    }
+            //TODO-HUS bir oyuncu patladığında, kasa da patlarsa beraberlik mi olur? Kasa normalde çekmez kazanır. Ama çoklu oyuncu olunca?
+            //player loses
+            if (currentHand.IsBusted)
+            {
+                spot.Player.LosingStreak++;
+                spot.Player.NotWinningStreak++;
+                spot.Player.WinningStreak = 0;
+            }
 
-        //    //it is a push
-        //    else if (dealer.Hand.HandValue == playerHand.HandValue)
-        //    {
-        //        earning = playerHand.BetAmount;
-        //        PayBackToPlayer(player, dealer, earning, husoka);
-        //        LogHelper.WriteLine($"It's a push!! {player.Name} has got {earning} TL back", ConsoleColor.DarkYellow);
-        //        player.LosingStreak = 0;
-        //        player.NotWinningStreak++;
-        //        player.WinningStreak = 0;
-        //    }
+            //player has blackjack
+            else if (currentHand.IsBlackJack && !table.Dealer.Hand.IsBlackJack)
+            {
+                earning = spot.BetAmount * 2.5M;
+                PayToPlayer(spot.Player, table, earning);
+                spot.Player.LosingStreak = 0;
+                spot.Player.NotWinningStreak = 0;
+                spot.Player.WinningStreak++;
+            }
 
-        //    //player loses
-        //    else if (dealer.Hand.HandValue > playerHand.HandValue)
-        //    {
-        //        LogHelper.WriteLine($"Nooo!! {player.Name} has lost the round", ConsoleColor.DarkRed);
-        //        player.LosingStreak++;
-        //        player.NotWinningStreak++;
-        //        player.WinningStreak = 0;
-        //    }
-        //    else
-        //    {
-        //        throw new Exception("Bu durumu incelemeliyiz.");
-        //    }
+            //player wins
+            else if (table.Dealer.Hand.IsBusted || currentHand.HandValue > table.Dealer.Hand.HandValue)
+            {
+                earning = spot.BetAmount * 2;
+                PayToPlayer(spot.Player, table, earning);
+                spot.Player.LosingStreak = 0;
+                spot.Player.NotWinningStreak = 0;
+                spot.Player.WinningStreak++;
+            }
 
-        //    LogHelper.WriteLine($"{player.Name}'s current balance: {player.Balance}", ConsoleColor.Blue);
-        //    LogHelper.WriteLine($"House's current balance: {dealer.Balance}", ConsoleColor.Magenta);
-        //}
+            //dealer has blackjack player loses
+            else if (table.Dealer.Hand.IsBlackJack)
+            {
+                spot.Player.LosingStreak++;
+                spot.Player.NotWinningStreak++;
+                spot.Player.WinningStreak = 0;
+            }
+
+            //it is a push
+            else if (table.Dealer.Hand.HandValue == currentHand.HandValue)
+            {
+                earning = spot.BetAmount;
+                PayToPlayer(spot.Player, table, earning);
+                spot.Player.LosingStreak = 0;
+                spot.Player.NotWinningStreak++;
+                spot.Player.WinningStreak = 0;
+            }
+
+            //player loses
+            else if (table.Dealer.Hand.HandValue > currentHand.HandValue)
+            {
+                spot.Player.LosingStreak++;
+                spot.Player.NotWinningStreak++;
+                spot.Player.WinningStreak = 0;
+            }
+            else
+            {
+                throw new Exception("Bu durumu incelemeliyiz.");
+            }
+
+            totalEarning += earning;
+        }
+
+        return totalEarning;
     }
 
-    private static void PayBackToPlayer(Player player, Dealer dealer, decimal amount, Husoka husoka)
+    private static void PayToPlayer(Player player, Table table, decimal amount)
     {
-        //player.Balance += amount;
-        //dealer.Balance -= amount;
-
-        //if (player == husoka.HusokaBettedFor)
-        //{
-        //    //TODO-HUS bet behind yaptığımız split yaparsa nasıl kazanıyorz?
-        //    var husoEarning = player.Hand.IsBlackJack ? husoka.CurrentHusokaBet * 2.5M : husoka.CurrentHusokaBet * 2;
-        //    husoka.Balance += husoEarning;
-        //    LogHelper.WriteLine($"Heeeellll yeaaah!!!!! {husoka.Name} has won {husoEarning} TL. {husoka.Name}'s current balance: {husoka.Balance}", ConsoleColor.DarkCyan);
-        //    husoka.HusokaIsMorting = false;
-        //    husoka.HusokaBettedFor = null;
-        //    husoka.CurrentHusokaBet = 0;
-        //}
+        player.Balance += amount;
+        table.Balance -= amount;
     }
 
     public static void PlayerBet(Player player, BjGame game, decimal betAmount, int spotIndex)
@@ -118,5 +111,14 @@ internal class BalanceManager
         spot.Player.Balance -= spot.BetAmount;
         table.Balance += spot.BetAmount;
         spot.BetAmount *= 2;
+    }
+
+    public static void PlayerSplit(Spot spot, Table table)
+    {
+        ArgumentNullException.ThrowIfNull(spot.Player);
+
+        spot.Player.Balance -= spot.BetAmount;
+        table.Balance += spot.BetAmount;
+        //We dont increase the bet amount here, because we will calculate each hand alone and according to current bet amount
     }
 }
