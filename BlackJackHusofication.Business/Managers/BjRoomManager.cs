@@ -1,9 +1,10 @@
-﻿using BlackJackHusofication.Model.Exceptions;
+﻿using AutoMapper;
+using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.Business.Managers;
 
-public class BjRoomManager
+public class BjRoomManager(IMapper mapper)
 {
     private readonly Dictionary<string, BjGame> _rooms = [];
     public readonly List<string> _clients = [];
@@ -13,13 +14,13 @@ public class BjRoomManager
         return _rooms[roomName] = new BjGame() { Name = roomName, RoomId = roomId };
     }
 
-    public BjGame AddPlayerToRoom(string roomName, string connectionId)
+    public BjGameDto AddPlayerToRoom(string roomName, string connectionId)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!"); 
 
         Player newPlayer = new() { Id = connectionId, Name = "Husoman" }; //TODO-HUS oyuncu adı.
         room.Players.Add(newPlayer);
-        return room;
+        return mapper.Map<BjGameDto>(room);
     }
     
     public BjGame RemovePlayerFromRoom(string roomName, string connectionId)

@@ -50,10 +50,10 @@ public class BlackJackSimulHub : Hub<IBlackJackSimulClient>
         await Clients.Others.SendLog(new() { Message = "New User Joined. Username : " + userName });
     }
 
-    public async Task GetAllBjRooms()
-    {
-        //await Clients.Caller.GetAllBjRooms(BjRoomSource.Rooms); //TODO-HUS 
-    }
+    //public async Task GetAllBjRooms()
+    //{
+    //    //await Clients.Caller.GetAllBjRooms(BjRoomSource.Rooms); //TODO-HUS 
+    //}
 }
 
 // Clients.Caller       --> isteği atan client

@@ -1,4 +1,5 @@
-﻿using BlackJackHusofication.Business.Helpers;
+﻿using AutoMapper;
+using BlackJackHusofication.Business.Helpers;
 using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.Model.Models;
@@ -17,6 +18,7 @@ public class BjRunnerService : BackgroundService
     private readonly BjGame _game;
     private readonly BjRoomManager _bjRoomManager;
     private readonly IBlackJackGameClient _allPlayers;
+    private readonly IMapper _mapper;
 
     public BjRunnerService(IServiceProvider services, int roomId)
     {
@@ -25,6 +27,7 @@ public class BjRunnerService : BackgroundService
         _bjRoomManager = services.GetRequiredService<BjRoomManager>();
         _game = _bjRoomManager.CreateRoom($"BJ-{roomId}", roomId);
         _allPlayers = _hubContext.Clients.Group(_game.Name);
+        _mapper = services.GetRequiredService<IMapper>(); 
     }
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -124,7 +127,7 @@ public class BjRunnerService : BackgroundService
         }
         _game.Table.Dealer.Hand = new();
         
-        _allPlayers.UpdateTable(_game.Table);
+        _allPlayers.UpdateTable(_mapper.Map<TableDto>(_game.Table) );
     }
 
     private void CollectAllCards()
