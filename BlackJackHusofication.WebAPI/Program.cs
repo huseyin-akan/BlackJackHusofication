@@ -1,4 +1,4 @@
-using BlackJackHusofication.Business;
+ï»¿using BlackJackHusofication.Business;
 using BlackJackHusofication.Business.BackgrounServices;
 using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Business.Mappings;
@@ -26,7 +26,7 @@ builder.Services.AddSingleton<BjSimulationManager>();
 builder.Services.AddSingleton<BjRoomManager>();
 builder.Services.AddSingleton<IGameLogger, SimulationLogsService>();
 
-builder.Services.AddAutoMapper( typeof(MappingProfile)); //TODO-HUS bunu bi araþtýralým, direk profile yazmak hýzlandýrmalý.
+builder.Services.AddAutoMapper( typeof(MappingProfile)); //TODO-HUS bunu bi araÅŸtÄ±ralÄ±m, direk profile yazmak hÄ±zlandÄ±rmalÄ±.
 
 BusinessServiceRegistraiton.AddBusinessDependencies(builder.Services);
 

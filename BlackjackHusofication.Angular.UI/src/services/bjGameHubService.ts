@@ -17,7 +17,7 @@ import { RoundWinningsNotification } from '../models/notifications/roundWinnings
 export class BjGameHubService {
   private hubConnection: signalR.HubConnection;
 
-  private activeRoom :BjGame;
+  private activeRoom :BjGame = new BjGame();
 
   private logSubject = new Subject<SimulationLog>();
   private bjSimulationSubject = new Subject<BjSimulation>();

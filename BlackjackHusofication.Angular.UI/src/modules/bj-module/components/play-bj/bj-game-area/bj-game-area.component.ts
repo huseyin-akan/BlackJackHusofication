@@ -13,7 +13,7 @@ import { Player } from '../../../../../models/player';
 })
 export class BjGameAreaComponent {
   players: boolean[] = Array(7).fill(false); 
-  activeRoom :BjGame ;
+  activeRoom :BjGame = new BjGame();
   currentUser: Player;
   winningAmount : number;
 
@@ -30,6 +30,8 @@ export class BjGameAreaComponent {
   constructor(private bjGameHubService :BjGameHubService){}
 
   ngOnInit(){
+    console.log(this.activeRoom);
+
     this.bjGameHubService.joinGroup("Blackjack - 1");
 
     this.bjGameHubService.activeRoom$.subscribe(room => {

@@ -6,7 +6,7 @@ export class BjGame{
     name : string;
     roundNo : number;
     players : Player[] = [];
-    table : Table;
+    table : Table = new Table();
     // isAcceptingBets : boolean;
     // isDealingAllCards : boolean;
     // isAskingForActions : boolean;

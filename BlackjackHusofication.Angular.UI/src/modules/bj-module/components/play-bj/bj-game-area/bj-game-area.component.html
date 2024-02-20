@@ -49,13 +49,13 @@
             <div class="player" *ngFor="let spot of activeRoom?.table?.spots; let i = index">
                 <div class="player-title" [hidden]="!spot">Player {{ i + 1 }}</div>
                 <div class="player-slot">
-                    <div class="card-stack" *ngFor="let card of spot.hand.cards; let i = index" >
+                    <div class="card-stack" *ngFor="let card of spot?.hand.cards; let i = index" >
                         <img *ngIf="card?.cardImg" class="animated-image" [ngStyle]="{ '--index': i }"
                      [src]="'assets/images/deck/' + card?.cardImg">
                     </div>
                 </div>
-                <div class="player-card-value">{{spot.hand.handValue}}</div>
-                <button *ngIf="!spot.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
+                <div class="player-card-value">{{spot?.hand.handValue}}</div>
+                <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
                     aria-label="Example icon button with a delete icon">
                     <mat-icon>add_circle</mat-icon>
                 </button>

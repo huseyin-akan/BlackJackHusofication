@@ -7,13 +7,6 @@ namespace BlackJackHusofication.WebAPI.Controllers;
 [ApiController]
 public class GameController(BjRoomManager roomManager) : ControllerBase
 {
-    [HttpPost("CreateRoom")] //TODO-HUS buna gerek olmama ihtimali yuksek
-    public IActionResult CreateRoom([FromBody] string roomName, int roomId)
-    {
-        roomManager.CreateRoom(roomName, roomId);
-        return Ok();
-    }
-
     [HttpGet("GetAllRooms")]
     public IActionResult GetAllRooms()
     {
