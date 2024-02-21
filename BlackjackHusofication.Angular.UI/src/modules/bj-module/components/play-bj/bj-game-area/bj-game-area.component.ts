@@ -64,6 +64,10 @@ export class BjGameAreaComponent {
     this.bjGameHubService.secretCardNotification$.subscribe(ntf => {
       this.showSecretCard(ntf.secretCard);
     });
+
+    this.bjGameHubService.currentPlayerSubject$.subscribe(player => {
+      this.currentUser = player; 
+    });
   }
 
   sitPlayer(spotId: number): void {

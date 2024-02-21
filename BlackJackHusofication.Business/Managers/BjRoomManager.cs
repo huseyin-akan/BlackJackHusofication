@@ -14,13 +14,13 @@ public class BjRoomManager(IMapper mapper)
         return _rooms[roomName] = new BjGame() { Name = roomName, RoomId = roomId };
     }
 
-    public BjGameDto AddPlayerToRoom(string roomName, string connectionId)
+    public (BjGameDto game, Player player) AddPlayerToRoom(string roomName, string connectionId)
     {
         var room = _rooms[roomName] ?? throw new Exception("Böyle bir oda yok la!!!"); 
 
-        Player newPlayer = new() { Id = connectionId, Name = "Husoman" }; //TODO-HUS oyuncu adı.
+        Player newPlayer = new() { Id = connectionId, Name = "Husoman", Balance = 5000 }; //TODO-HUS oyuncu adı.
         room.Players.Add(newPlayer);
-        return mapper.Map<BjGameDto>(room);
+        return (mapper.Map<BjGameDto>(room), newPlayer);
     }
     
     public BjGame RemovePlayerFromRoom(string roomName, string connectionId)
@@ -41,7 +41,7 @@ public class BjRoomManager(IMapper mapper)
     }
 
     //TODO-HUS Global Exception yazalım SignalR için de. Sonra frontend tarafında notification verelim.
-    public BjGame SitPlayerToSpot(string roomName, string connectionId, int spotId)
+    public (BjGame room, Player player) SitPlayerToSpot(string roomName, string connectionId, int spotId)
     {
         var room = _rooms[roomName] ?? throw new BjGameException("Böyle bir oda yok la!!!");
         var currentPlayer = room.Players.FirstOrDefault(p => p.Id == connectionId)
@@ -54,7 +54,7 @@ public class BjRoomManager(IMapper mapper)
         if (!isSpotAvailable) throw new BjGameException("Yer yok la nasıl oturacan :D ");
         else spot.Player = currentPlayer;
         
-        return room;
+        return (room, currentPlayer);
     }
 
     public BjGame RemovePlayerFromSpot(string roomName, string connectionId, int spotId)

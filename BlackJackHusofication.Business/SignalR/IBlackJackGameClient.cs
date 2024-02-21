@@ -17,13 +17,14 @@ public interface IBlackJackGameClient
     Task SitPlayer(BjGame bjRoom);  //TODO-HUS BjGameDto olmalı sanırım
     Task PlayerLeaveTable(BjGame bjRoom); //TODO-HUS BjGameDto olmalı sanırım
     Task PlayerAction(CardAction action);
-    Task PlayerBet(decimal betAmount);
+    Task PlayerBet(decimal betAmount, int spotIndex);
     Task RoundStarted(int roundNumber);
     Task DealCard(Hand hand);
 
     //Updates
     Task UpdateTable(TableDto table);
     Task UpdateHand(Hand hand);
+    Task UpdatePlayer(Player player);
 
     //Notifications
     Task NotifyCountDown(CountDownNotification notification);

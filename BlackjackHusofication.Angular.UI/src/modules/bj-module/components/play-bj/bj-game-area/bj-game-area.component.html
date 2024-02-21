@@ -51,7 +51,8 @@
                      [src]="'assets/images/deck/' + card?.cardImg">
                     </div>
                 </div>
-                <div class="player-card-value">{{spot?.hand.handValue}}</div>
+                <div class="player-card-value">Hand Value : {{spot?.hand?.handValue}}</div>
+                <div class="player-card-value">Bet Amunt : {{spot?.betAmount}}</div>
                 <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
                     aria-label="Example icon button with a delete icon">
                     <mat-icon>add_circle</mat-icon>

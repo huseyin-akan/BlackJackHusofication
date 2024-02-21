@@ -3,24 +3,20 @@ using BlackJackHusofication.DataAccess.StaticData;
 using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 using Microsoft.AspNetCore.SignalR;
+using System.Numerics;
 
 namespace BlackJackHusofication.Business.SignalR;
 public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameClient>
 {
-    public override async  Task OnConnectedAsync() //bir client bağlanınca
+    public override async  Task OnConnectedAsync() //when a new client connects
     {
-        // Context.ConnectionId --> Clientların bağlantı ID'sidir. Clientları bu IDler ile ayırabiliriz. Bazı mesajları sadece belirli clientlara göndermemizi sağlar.
         roomManager._clients.Add(Context.ConnectionId);
         await Clients.Caller.UserJoined(Context.ConnectionId);
         await Clients.All.AllClients(roomManager._clients);
         await Clients.Caller.GetAllBjRooms(roomManager.GetRooms() );
-
-        //await Clients.All.SendAsync("clients", clients);
-
-        //STRONGLY TYPED HUBS :Normalde <IBlackJackClient> metodunu interface'ini vermezsek yukarıdaki gibi de kullanabiliriz. Fakat neden hataya mahal verelim ki. Tip güvenlikli çalışalım. Metot adlarımızla aynı mesajları SendAsync yapıyor kendisi arka planda. 
     }
 
-    public override async Task OnDisconnectedAsync(Exception exception) //bir client kopunca
+    public override async Task OnDisconnectedAsync(Exception exception) //when a client disconnects
     {
         roomManager._clients.Remove(Context.ConnectionId);
         await Clients.All.UserLeft(Context.ConnectionId);
@@ -29,9 +25,11 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     public async Task PlayerJoinRoom(string roomName)
     {
         var connectionId = Context.ConnectionId;
-        var room = roomManager.AddPlayerToRoom(roomName, connectionId);
-        await Groups.AddToGroupAsync(connectionId, roomName);  //TODO-HUS aynı oyuncunun 2 farklı yerden odasının yönetilmesi buglara sebep olabilir.
-        await Clients.Caller.PlayerJoinedRoom(room);
+        var (room, player) = roomManager.AddPlayerToRoom(roomName, connectionId);
+        var addToGroupTask = Groups.AddToGroupAsync(connectionId, roomName);  //TODO-HUS aynı oyuncunun 2 farklı yerden odasının yönetilmesi buglara sebep olabilir.
+        var playerJoinTask = Clients.Caller.PlayerJoinedRoom(room);
+        var updatePlayerTask = Clients.Caller.UpdatePlayer(player);
+        await Task.WhenAll(addToGroupTask, playerJoinTask, updatePlayerTask);
     }
 
     public async Task PlayerLeaveRoom(string roomName)
@@ -47,9 +45,12 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     public async Task SitPlayer(string roomName, int spotId)
     {
         var connectionId = Context.ConnectionId;
-        var room = roomManager.SitPlayerToSpot(roomName, connectionId, spotId);
+        var (room, player) = roomManager.SitPlayerToSpot(roomName, connectionId, spotId);
 
-        await Clients.Group(roomName).SitPlayer(room);
+        var sitPlayerTask =  Clients.Group(roomName).SitPlayer(room); //TODO-HUS burada tum roomu değil sadece oyuncuları update etmeliyiz. UpdateSitingPlayers olabilir.
+        var updatePlayerTask = Clients.Caller.UpdatePlayer(player);
+
+        await Task.WhenAll(sitPlayerTask, updatePlayerTask);
     }
 
     public async Task PlayerLeaveTable(string roomName, int spotId)
@@ -84,8 +85,7 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     {
         await Clients.Caller.GetAllBjRooms(roomManager.GetRooms() );
     }
-
-    //TODO-HUS aynı oyuncunun farklı koltuklara otururken referansı aynı gitmesinden kaynaklı problemleri var. 
+ 
     public async Task PlayerBet(string roomName, int spotIndex, decimal betAmount)
     {
         var player = roomManager.GetSittingPlayer(roomName, spotIndex) ?? throw new BjGameException("Koltuk oyuncu yok!!!"); ;
@@ -95,15 +95,15 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         BalanceManager.PlayerBet(player, game, betAmount, spotIndex);
 
         //send all players in the room a notification about player's bet
-        var bettingNotificationTask = Clients.Group(roomName).PlayerBet(betAmount);
+        var bettingNotificationTask = Clients.Group(roomName).PlayerBet(betAmount, spotIndex);
+        var updatePlayerTask = Clients.Caller.UpdatePlayer(player);
 
         //if the table is full and there is no any spot left where bet is not registered, cancel count-down.
         if (game.Table.Spots.Count(x => x.Player is not null) == 7 && !game.Table.Spots.Any(x => x.BetAmount == 0)) {
             game.CancellationTokenSource.Cancel();
-            //game.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS sadece yukarıki yetiyor olmalı
         } 
         
-        await bettingNotificationTask;
+        await Task.WhenAll(bettingNotificationTask, updatePlayerTask);
     }
 
     public Task PlayCardAction(CardAction action, string roomName, int spotNo, bool isForSplittedHand = false)
@@ -117,7 +117,6 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
 
         // Cancel the timeout when the player makes a move
         room.CancellationTokenSource.Cancel();
-        //room.CancellationTokenSource.Token.ThrowIfCancellationRequested(); //TODO-HUS bu olmadan çalışıyor sanki.
         return Task.CompletedTask;
     }
 }
