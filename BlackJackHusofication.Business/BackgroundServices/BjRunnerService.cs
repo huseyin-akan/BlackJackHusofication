@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace BlackJackHusofication.Business.BackgrounServices;
+namespace BlackJackHusofication.Business.BackgroundServices;
 
 public class BjRunnerService : BackgroundService
 {
@@ -27,7 +27,7 @@ public class BjRunnerService : BackgroundService
         _bjRoomManager = services.GetRequiredService<BjRoomManager>();
         _game = _bjRoomManager.CreateRoom($"BJ-{roomId}", roomId);
         _allPlayers = _hubContext.Clients.Group(_game.Name);
-        _mapper = services.GetRequiredService<IMapper>(); 
+        _mapper = services.GetRequiredService<IMapper>();
     }
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,7 +40,7 @@ public class BjRunnerService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("Hadi lan kekolar bet atın");
-            
+
             _game.CancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = _game.CancellationTokenSource.Token;
 
@@ -95,8 +95,7 @@ public class BjRunnerService : BackgroundService
                 continue;
             }
 
-            ntf = new() {PlayerId = spot.Player.Id, Earning = earning, Balance = spot.Player.Balance};
-            ntf.Earning += earning;
+            ntf = new() { PlayerId = spot.Player.Id, Earning = earning, Balance = spot.Player.Balance };
             results.Add(ntf);
         }
 
@@ -104,6 +103,7 @@ public class BjRunnerService : BackgroundService
         foreach (var result in results)
         {
             await _hubContext.Clients.Client(result.PlayerId).NotifyRoundWinnigs(result);
+            await Task.Delay(3000); //render earnings
         }
     }
 
@@ -127,8 +127,8 @@ public class BjRunnerService : BackgroundService
             spot.SplittedHand = null;
         }
         _game.Table.Dealer.Hand = new();
-        
-        _allPlayers.UpdateTable(_mapper.Map<TableDto>(_game.Table) );
+
+        _allPlayers.UpdateTable(_mapper.Map<TableDto>(_game.Table));
     }
 
     private void CollectAllCards()
@@ -136,12 +136,13 @@ public class BjRunnerService : BackgroundService
         _game.Table.PlayedCards.AddRange(_game.Table.Dealer.Hand.Cards);
         _game.Table.Dealer.Hand = new();
 
-        foreach (var spot in _game.Table.Spots.Where(s => s.BetAmount > 0) )
+        foreach (var spot in _game.Table.Spots.Where(s => s.BetAmount > 0))
         {
             _game.Table.PlayedCards.AddRange(spot.Hand.Cards);
             spot.Hand = new();
-            
-            if(spot.SplittedHand is not null) {
+
+            if (spot.SplittedHand is not null)
+            {
                 _game.Table.PlayedCards.AddRange(spot.SplittedHand.Cards);
                 spot.SplittedHand = null;
             }
@@ -217,7 +218,8 @@ public class BjRunnerService : BackgroundService
         {
             await _allPlayers.NotifyCardDeal(new CardDealNotification
             {
-                NewCard = card
+                NewCard = new(CardType.SecretCard, CardValue.SecretCard, "card-back.jpg"), //we deal secret card for now
+                SpotNo = spotNo
             });
         }
         else
@@ -249,7 +251,7 @@ public class BjRunnerService : BackgroundService
                     {
                         var delayTask = Task.Delay(1_000, cancellationToken);
                         var notificationTask = _hubContext.Clients.Group(_game.Name)
-                            .NotifyAwaitingCardAction(new AwaitingCardActionNotification {SpotNo = spot.Id, Seconds = i });
+                            .NotifyAwaitingCardAction(new AwaitingCardActionNotification { SpotNo = spot.Id, Seconds = i });
                         await Task.WhenAll(delayTask, notificationTask);
                         if (spot.Hand.NextCardAction is not null) break;
                         _logger.LogInformation("1 sn geçti. Henüz bir aksiyon gelmedi! Aksiyon al amık");
@@ -289,7 +291,7 @@ public class BjRunnerService : BackgroundService
                     _game.CancellationTokenSource = new CancellationTokenSource();
                     cancellationToken = _game.CancellationTokenSource.Token;
                 }
-                
+
                 //If no action is taken in the time, then stand is played
                 spot.SplittedHand!.NextCardAction ??= CardAction.Stand;
 
@@ -306,7 +308,7 @@ public class BjRunnerService : BackgroundService
         var hand = (isForSplittedHand ? spot.SplittedHand : spot.Hand) ?? throw new Exception("ha ha ha nasıl oldu la bu.");
         return hand.NextCardAction switch
         {
-            CardAction.Stand => ApplyStand(), 
+            CardAction.Stand => ApplyStand(),
             CardAction.Hit => await ApplyHit(spot, hand),
             CardAction.Double => await ApplyDouble(spot, hand),
             CardAction.Split => await ApplySplit(spot),
@@ -314,7 +316,7 @@ public class BjRunnerService : BackgroundService
         };
     }
 
-    private bool ApplyStand() 
+    private bool ApplyStand()
     {
         return false;
     }
@@ -328,7 +330,7 @@ public class BjRunnerService : BackgroundService
 
         spot.SplittedHand.HandValue = CardManager.GetCountOfHand(spot.SplittedHand);
         spot.Hand.HandValue = CardManager.GetCountOfHand(spot.Hand);
-        
+
         BalanceManager.PlayerSplit(spot, _game.Table);
 
         await DealCard(spot.Hand, spot.Id);
@@ -353,8 +355,8 @@ public class BjRunnerService : BackgroundService
 
     private async Task PlayForDealer()
     {
-        var renderSecretCardTask = Task.Delay(2000); //render card showing
-        
+        var renderSecretCardTask = Task.Delay(3000); //render card showing
+
         //Open dealer's card and notify everyone.
         var cardNotificationTask = _allPlayers.NotifySecretCard(new() { SecretCard = _game.Table.Dealer.Hand.Cards[1] });
 
@@ -367,7 +369,7 @@ public class BjRunnerService : BackgroundService
         //Otherwise dealers opens card and hits until at least 17
         while (_game.Table.Dealer.Hand.HandValue < 17)
         {
-            await DealCard(_game.Table.Dealer.Hand,0);
+            await DealCard(_game.Table.Dealer.Hand, 0);
         }
     }
 }

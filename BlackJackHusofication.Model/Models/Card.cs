@@ -17,7 +17,8 @@ public enum CardValue
     Jack = 11,
     Queen = 12,
     King = 13,
-    ShufflerCard = -1
+    ShufflerCard = -1,
+    SecretCard = -2
 }
 
 public enum CardType
@@ -26,7 +27,8 @@ public enum CardType
     Diamonds = 2,
     Spades = 3,
     Clubs = 4,
-    ShufflerCard = -1
+    ShufflerCard = -1,
+    SecretCard = -2
 }
 
 public enum CardAction

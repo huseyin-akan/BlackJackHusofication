@@ -5,7 +5,6 @@ import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
 import { Card, CardAction } from '../../../../../models/card';
 import { Player } from '../../../../../models/player';
-import { SECRET_CARD_IMG } from '../../../../../constants/constants';
 
 @Component({
   selector: 'app-bj-game-area',
@@ -27,8 +26,6 @@ export class BjGameAreaComponent {
   isActionforSpotNo;
   isActionForSplit = false;
   isRenderActionButtons = false;
-  
-  secretCardImg : string = SECRET_CARD_IMG;
 
   constructor(private bjGameHubService :BjGameHubService){}
 
@@ -61,9 +58,7 @@ export class BjGameAreaComponent {
       this.currentUser.balance = ntf.balance;
       this.winningAmount = ntf.earning;
 
-      this.secretCardImg = SECRET_CARD_IMG;
-      this.bjCounterForAction = 0;
-      this.bjCounter = 0;
+      this.startNewRound();
     })
 
     this.bjGameHubService.secretCardNotification$.subscribe(ntf => {
@@ -87,8 +82,7 @@ export class BjGameAreaComponent {
 
   dealNewCard(ntf:CardDealNotification ){
     if(ntf.spotNo == 0){
-      let dealerHand = this.activeRoom.table.dealer.hand;
-      dealerHand.cards.push(ntf.newCard);
+      this.activeRoom.table.dealer.hand.cards.push(ntf.newCard);
       return;
     }
 
@@ -97,8 +91,13 @@ export class BjGameAreaComponent {
   }
 
   showSecretCard(secretCard : Card){
-    this.secretCardImg = secretCard.cardImg;
+    this.activeRoom.table.dealer.hand.cards[1] = secretCard;
     //TODO-HUS buraya döndurme efekti eklicez.
+  }
+
+  startNewRound(){
+    this.bjCounterForAction = 0;
+    this.bjCounter = 0;
   }
 
   renderActionButtons(spotNo : number, isForSplitHand : boolean){

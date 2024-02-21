@@ -1,5 +1,5 @@
 ﻿using BlackJackHusofication.Business;
-using BlackJackHusofication.Business.BackgrounServices;
+using BlackJackHusofication.Business.BackgroundServices;
 using BlackJackHusofication.Business.Managers;
 using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.Business.Services.Abstracts;

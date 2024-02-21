@@ -16,7 +16,7 @@
     </div>
 
     <div class="bj-counter"> 
-        {{currentUser?.balance}}
+        Bakiye : {{currentUser?.balance}}
         <br>
     </div>
     <div class="bj-counter"> 
@@ -33,13 +33,10 @@
                 <span>Dealer</span>
             </div>
             <div class="dealer-slots">
-                <div class="dealer-card-slot">
-                    <img *ngIf="activeRoom && activeRoom?.table?.dealer?.hand?.cards[0]?.cardImg" class="animated-image"
-                        [src]="'assets/images/deck/' + activeRoom?.table?.dealer?.hand?.cards[0]?.cardImg">
-                </div>
-                <div class="dealer-card-slot">
-                    <img *ngIf="activeRoom && activeRoom?.table?.dealer?.hand?.cards[1]?.cardImg" 
-                    class="animated-image" [src]="'assets/images/deck/' + secretCardImg">
+                <div *ngFor="let card of activeRoom?.table?.dealer?.hand?.cards; let i = index;">
+                    <div class="dealer-card-slot"> 
+                        <img  class="animated-image" [src]="'assets/images/deck/' + card.cardImg">
+                    </div>
                 </div>
             </div>
         </div>
