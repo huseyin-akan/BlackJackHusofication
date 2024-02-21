@@ -1,7 +1,7 @@
-﻿3 - Bet atınca anlık bakiye update olmalı
-5 - Başka bir odaya join olunca, mevcut bir odada aktifsek  session kapatılacak.
-6 - action countdown should go down ve bet suresini 10 sn yap.
-7- bizde blackjack kasada blackjack varken 0 lira ödedi.
-8 - biz patlasak bile kasa çekmeye devam ediyor. biz patlayınca paramıza çöksun :D 
+﻿5 - Başka bir odaya join olunca, mevcut bir odada aktifsek  session kapatılacak.
+7-  bizde blackjack kasada blackjack varken 0 lira ödedi.
 9 - Bet zamanı değilken bet butonları disabled olmalı. Backendde ise bet zamanı değilken yapılan bete hata fırlatmalı.
 10- UpdateSitingPlayers metodu ekleyelim. Metot adını arat. Ekleyeceğn yeri bul.
+11- Player should be able to leave table
+12- Bizde blackjack varken kasa kart çekmeye devam etti.
+13- 

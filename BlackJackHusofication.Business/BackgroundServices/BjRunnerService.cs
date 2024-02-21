@@ -32,7 +32,7 @@ public class BjRunnerService : BackgroundService
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(10_000, stoppingToken); //We wait for 10 seconds in the beginning of the game
+        await Task.Delay(5_000, stoppingToken); //We wait for 10 seconds in the beginning of the game
 
         _logger.LogInformation("oyun başladı dostum. Let's gooo");
 
@@ -44,8 +44,8 @@ public class BjRunnerService : BackgroundService
             _game.CancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = _game.CancellationTokenSource.Token;
 
-            //We give to the players 30 seconds to bet. 
-            var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 15, cancellationToken);
+            //We give to the players 10 seconds to bet. 
+            var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 10, cancellationToken);
             if (!startNewRound) continue;
 
             _game.CancellationTokenSource = new CancellationTokenSource();
@@ -208,6 +208,7 @@ public class BjRunnerService : BackgroundService
         }
 
         hand.Cards.Add(card);
+        var oldHandValue = hand.HandValue;
         hand.HandValue = CardManager.GetCountOfHand(hand);
 
         if (hand.HandValue > 21) hand.IsBusted = true;
@@ -219,7 +220,8 @@ public class BjRunnerService : BackgroundService
             await _allPlayers.NotifyCardDeal(new CardDealNotification
             {
                 NewCard = new(CardType.SecretCard, CardValue.SecretCard, "card-back.jpg"), //we deal secret card for now
-                SpotNo = spotNo
+                SpotNo = spotNo,
+                HandValue = oldHandValue
             });
         }
         else
@@ -227,7 +229,8 @@ public class BjRunnerService : BackgroundService
             await _allPlayers.NotifyCardDeal(new CardDealNotification
             {
                 NewCard = card,
-                SpotNo = spotNo
+                SpotNo = spotNo,
+                HandValue = hand.HandValue
             });
             await _allPlayers.UpdateHand(hand);
         }
@@ -237,7 +240,7 @@ public class BjRunnerService : BackgroundService
 
     private async Task AskAllPlayersForActions()
     {
-        const int ACTION_TIME = 30;
+        const int ACTION_TIME = 20;
         var cancellationToken = _game.CancellationTokenSource.Token;
 
         foreach (var spot in _game.Table.Spots.Where(x => x.BetAmount > 0))
@@ -247,7 +250,7 @@ public class BjRunnerService : BackgroundService
             {
                 try
                 {
-                    for (int i = 0; i < ACTION_TIME; i++)
+                    for (int i = ACTION_TIME; i > 0; i--)
                     {
                         var delayTask = Task.Delay(1_000, cancellationToken);
                         var notificationTask = _hubContext.Clients.Group(_game.Name)
@@ -355,16 +358,16 @@ public class BjRunnerService : BackgroundService
 
     private async Task PlayForDealer()
     {
-        var renderSecretCardTask = Task.Delay(3000); //render card showing
+        var renderSecretCardTask = Task.Delay(2_000); //render card showing
 
         //Open dealer's card and notify everyone.
-        var cardNotificationTask = _allPlayers.NotifySecretCard(new() { SecretCard = _game.Table.Dealer.Hand.Cards[1] });
+        var cardNotificationTask = _allPlayers.NotifySecretCard(new() { SecretCard = _game.Table.Dealer.Hand.Cards[1], HandValue = _game.Table.Dealer.Hand.HandValue });
 
         await Task.WhenAll(renderSecretCardTask, cardNotificationTask);
 
-        //If everyone is busted, dealer wins. 
-        if (!_game.Table.Spots.Any(x => !x.Hand.IsBusted)
-            && !_game.Table.Spots.Any(x => x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
+        //If everyone who has betted is busted, dealer wins. 
+        if (!_game.Table.Spots.Any(x => x.BetAmount > 0 && !x.Hand.IsBusted)
+            && !_game.Table.Spots.Any(x => x.BetAmount > 0 && x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
 
         //Otherwise dealers opens card and hits until at least 17
         while (_game.Table.Dealer.Hand.HandValue < 17)

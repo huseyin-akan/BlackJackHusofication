@@ -5,6 +5,7 @@ import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
 import { Card, CardAction } from '../../../../../models/card';
 import { Player } from '../../../../../models/player';
+import { SecretCardNotification } from '../../../../../models/notifications/secretCardNotification';
 
 @Component({
   selector: 'app-bj-game-area',
@@ -26,6 +27,7 @@ export class BjGameAreaComponent {
   isActionforSpotNo;
   isActionForSplit = false;
   isRenderActionButtons = false;
+  tbBetAmount : number;
 
   constructor(private bjGameHubService :BjGameHubService){}
 
@@ -36,6 +38,7 @@ export class BjGameAreaComponent {
 
     this.bjGameHubService.activeRoom$.subscribe(room => {
       this.activeRoom = room
+      console.log("beni de zıplattı vellaaha")
     });
 
     this.bjGameHubService.countDownNotification$.subscribe(ntf => {
@@ -62,7 +65,7 @@ export class BjGameAreaComponent {
     })
 
     this.bjGameHubService.secretCardNotification$.subscribe(ntf => {
-      this.showSecretCard(ntf.secretCard);
+      this.showSecretCard(ntf);
     });
 
     this.bjGameHubService.currentPlayerSubject$.subscribe(player => {
@@ -76,7 +79,7 @@ export class BjGameAreaComponent {
   }
 
   betPlayer(spotId: number): void {
-    this.bjGameHubService.playerBet(this.activeRoom.name, spotId, 100)
+    this.bjGameHubService.playerBet(this.activeRoom.name, spotId, this.tbBetAmount)
     .catch((err) => console.error(err));
   }
 
@@ -87,15 +90,18 @@ export class BjGameAreaComponent {
   dealNewCard(ntf:CardDealNotification ){
     if(ntf.spotNo == 0){
       this.activeRoom.table.dealer.hand.cards.push(ntf.newCard);
+      this.activeRoom.table.dealer.hand.handValue = ntf.handValue;
       return;
     }
 
     let spot = this.activeRoom.table.spots.find(s => s.id == ntf.spotNo);
     spot.hand.cards.push(ntf.newCard);
+    spot.hand.handValue = ntf.handValue;
   }
 
-  showSecretCard(secretCard : Card){
-    this.activeRoom.table.dealer.hand.cards[1] = secretCard;
+  showSecretCard(ntf : SecretCardNotification){
+    this.activeRoom.table.dealer.hand.cards[1] = ntf.secretCard;
+    this.activeRoom.table.dealer.hand.handValue = ntf.handValue;
     //TODO-HUS buraya döndurme efekti eklicez.
   }
 

@@ -9,10 +9,10 @@
     </div>
     
     <div>
-        <button *ngIf="isBtnHitShow" mat-fab color="primary" (click)="playAction('Hit')"> Hit </button>
-        <button *ngIf="isBtnStandShow" mat-fab color="primary" (click)="playAction('Stand')"> Stand </button>
-        <button *ngIf="isBtnDoubleShow" mat-fab color="primary" (click)="playAction('Double')"> Double </button>
-        <button *ngIf="isBtnSplitShow" mat-fab color="primary" (click)="playAction('Split')"> Split </button>
+        @if(isBtnHitShow){ <button mat-fab color="primary" (click)="playAction('Hit')"> Hit </button> }
+        @if(isBtnStandShow){ <button mat-fab color="primary" (click)="playAction('Stand')"> Stand </button> }
+        @if(isBtnDoubleShow){ <button mat-fab color="primary" (click)="playAction('Double')"> Double </button> }
+        @if(isBtnSplitShow){ <button mat-fab color="primary" (click)="playAction('Split')"> Split </button> }
     </div>
 
     <div class="bj-counter"> 
@@ -30,7 +30,8 @@
         <!-- Dealer Slot -->
         <div class="dealer">
             <div class="dealer-title">
-                <span>Dealer</span>
+                <span>Dealer</span> <br>
+                <span>Hand Value : {{activeRoom?.table?.dealer?.hand?.handValue}}</span>
             </div>
             <div class="dealer-slots">
                 <div *ngFor="let card of activeRoom?.table?.dealer?.hand?.cards; let i = index;">
@@ -52,7 +53,10 @@
                     </div>
                 </div>
                 <div class="player-card-value">Hand Value : {{spot?.hand?.handValue}}</div>
-                <div class="player-card-value">Bet Amunt : {{spot?.betAmount}}</div>
+                <div class="player-card-value">Bet Amount : {{spot?.betAmount}}</div>
+                <mat-form-field class="tb-bet-amount">
+                    <input matInput type="number" [(ngModel)]="tbBetAmount">
+                </mat-form-field>
                 <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
                     aria-label="Example icon button with a delete icon">
                     <mat-icon>add_circle</mat-icon>
@@ -62,13 +66,6 @@
                     <mat-icon>local_atm</mat-icon>
                 </button>
             </div>
-        </div>
-
-        <!-- Bet Buttons -->
-        <div class="bet-buttons" *ngIf="players[0]">
-            <button>10</button>
-            <button>20</button>
-            <button>50</button>
         </div>
     </div>
 </div>

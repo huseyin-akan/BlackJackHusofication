@@ -12,6 +12,7 @@ import { AwaitingCardActionNotification } from '../models/notifications/awaiting
 import { RoundWinningsNotification } from '../models/notifications/roundWinningsNotification';
 import { SecretCardNotification } from '../models/notifications/secretCardNotification';
 import { Player } from '../models/player';
+import { Hand } from '../models/hand';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class BjGameHubService {
   private roundWinningsNotification = new Subject<RoundWinningsNotification>();
   private secretCardNotification = new Subject<SecretCardNotification>();
   private currentPlayer= new Subject<Player>();
+  private updateHand= new Subject<Hand>();
 
   log$ = this.logSubject.asObservable();
   bjSimulation$ = this.bjSimulationSubject.asObservable();
@@ -42,6 +44,7 @@ export class BjGameHubService {
   roundWinningsNotification$ = this.roundWinningsNotification.asObservable();
   secretCardNotification$ = this.secretCardNotification.asObservable();
   currentPlayerSubject$ = this.currentPlayer.asObservable();
+  updateHand$ = this.updateHand.asObservable();
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -73,6 +76,13 @@ export class BjGameHubService {
       this.activeRoomSubject.next(room);
     });
 
+    this.hubConnection.on('PlayerBet', (betAmount: number, spotIndex : number) => {
+      console.log('gelen degerler' , betAmount, spotIndex)
+      this.activeRoom.table.spots[spotIndex-1].betAmount = betAmount;
+      console.log('this.activeRoom',this.activeRoom)
+      this.activeRoomSubject.next(this.activeRoom);
+    });
+
     //Updates:
     this.hubConnection.on('UpdateTable', (table: Table) => {
       this.activeRoom.table = table;
@@ -83,9 +93,9 @@ export class BjGameHubService {
       this.currentPlayer.next(player);
     });
 
-    // this.hubConnection.on('UpdateHand', (hand: Hand) => {
-    //   this.updateHand.next(hand);
-    // });
+    this.hubConnection.on('UpdateHand', (hand: Hand) => {
+      this.updateHand.next(hand);
+    });
 
     //Notifications:
     this.hubConnection.on('NotifyCountDown', (notification: CountDownNotification) => {
