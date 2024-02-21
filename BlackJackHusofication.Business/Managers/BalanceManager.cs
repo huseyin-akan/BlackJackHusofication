@@ -1,6 +1,5 @@
 ﻿using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
-using BlackJackHusofication.Model.Models.Notifications;
 
 namespace BlackJackHusofication.Business.Managers;
 

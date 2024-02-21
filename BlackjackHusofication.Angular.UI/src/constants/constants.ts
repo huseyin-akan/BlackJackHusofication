@@ -1,0 +1,1 @@
+export const SECRET_CARD_IMG :string= "card-back.jpg";

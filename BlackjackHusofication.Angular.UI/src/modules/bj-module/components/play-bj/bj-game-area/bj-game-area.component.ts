@@ -3,8 +3,9 @@ import { BjGame } from '../../../../../models/bjGame';
 import { BjGameHubService } from '../../../../../services/bjGameHubService';
 import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
-import { CardAction } from '../../../../../models/card';
+import { Card, CardAction } from '../../../../../models/card';
 import { Player } from '../../../../../models/player';
+import { SECRET_CARD_IMG } from '../../../../../constants/constants';
 
 @Component({
   selector: 'app-bj-game-area',
@@ -14,7 +15,7 @@ import { Player } from '../../../../../models/player';
 export class BjGameAreaComponent {
   players: boolean[] = Array(7).fill(false); 
   activeRoom :BjGame = new BjGame();
-  currentUser: Player;
+  currentUser: Player = new Player();
   winningAmount : number;
 
   bjCounter : number = 0;
@@ -26,6 +27,8 @@ export class BjGameAreaComponent {
   isActionforSpotNo;
   isActionForSplit = false;
   isRenderActionButtons = false;
+  
+  secretCardImg : string = SECRET_CARD_IMG;
 
   constructor(private bjGameHubService :BjGameHubService){}
 
@@ -54,9 +57,18 @@ export class BjGameAreaComponent {
     })
 
     this.bjGameHubService.roundWinningsNotification$.subscribe(ntf => {
+      console.log(ntf);
       this.currentUser.balance = ntf.balance;
       this.winningAmount = ntf.earning;
+
+      this.secretCardImg = SECRET_CARD_IMG;
+      this.bjCounterForAction = 0;
+      this.bjCounter = 0;
     })
+
+    this.bjGameHubService.secretCardNotification$.subscribe(ntf => {
+      this.showSecretCard(ntf.secretCard);
+    });
   }
 
   sitPlayer(spotId: number): void {
@@ -82,6 +94,11 @@ export class BjGameAreaComponent {
 
     let spot = this.activeRoom.table.spots.find(s => s.id == ntf.spotNo);
     spot.hand.cards.push(ntf.newCard);
+  }
+
+  showSecretCard(secretCard : Card){
+    this.secretCardImg = secretCard.cardImg;
+    //TODO-HUS buraya döndurme efekti eklicez.
   }
 
   renderActionButtons(spotNo : number, isForSplitHand : boolean){

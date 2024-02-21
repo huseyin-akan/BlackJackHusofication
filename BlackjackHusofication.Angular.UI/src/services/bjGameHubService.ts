@@ -10,6 +10,7 @@ import { Table } from '../models/table';
 import { CardAction } from '../models/card';
 import { AwaitingCardActionNotification } from '../models/notifications/awaitingCardActionNotification';
 import { RoundWinningsNotification } from '../models/notifications/roundWinningsNotification';
+import { SecretCardNotification } from '../models/notifications/secretCardNotification';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,7 @@ export class BjGameHubService {
   private cardDealNotifiation = new Subject<CardDealNotification>();
   private awaitCardActionNotification = new Subject<AwaitingCardActionNotification>();
   private roundWinningsNotification = new Subject<RoundWinningsNotification>();
+  private secretCardNotification = new Subject<SecretCardNotification>();
 
   log$ = this.logSubject.asObservable();
   bjSimulation$ = this.bjSimulationSubject.asObservable();
@@ -36,6 +38,7 @@ export class BjGameHubService {
   cardDealNotifiation$ = this.cardDealNotifiation.asObservable();
   awaitCardActionNotification$ = this.awaitCardActionNotification.asObservable();
   roundWinningsNotification$ = this.roundWinningsNotification.asObservable();
+  secretCardNotification$ = this.secretCardNotification.asObservable();
 
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -92,6 +95,10 @@ export class BjGameHubService {
 
     this.hubConnection.on('NotifyRoundWinnigs', (notification: RoundWinningsNotification) => {
       this.roundWinningsNotification.next(notification);
+    });
+
+    this.hubConnection.on('NotifySecretCard', (notification: SecretCardNotification) => {
+      this.secretCardNotification.next(notification);
     });
 
     this.hubConnection.on('RoundStarted', (roundNumber : number) => {

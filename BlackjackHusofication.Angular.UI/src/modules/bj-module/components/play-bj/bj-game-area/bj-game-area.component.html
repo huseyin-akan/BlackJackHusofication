@@ -39,7 +39,7 @@
                 </div>
                 <div class="dealer-card-slot">
                     <img *ngIf="activeRoom && activeRoom?.table?.dealer?.hand?.cards[1]?.cardImg" 
-                    class="animated-image" src="assets/images/deck/card-back.jpg">
+                    class="animated-image" [src]="'assets/images/deck/' + secretCardImg">
                 </div>
             </div>
         </div>

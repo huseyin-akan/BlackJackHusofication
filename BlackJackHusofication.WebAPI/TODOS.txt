@@ -1,0 +1,5 @@
+﻿1 - We should show dealer's extra cards if dealer deals new cards.
+2 - Kazanınca para hatalı hesaplanıyor 200 yerine 400 kazanıyoruz.
+3 - Bet atınca anlık bakiye update olmalı
+4 - Bet miktarı UI'dan belirlebilelim.
+5 - Başka bir odaya join olunca, mevcut bir odada aktifsek  session kapatılacak.

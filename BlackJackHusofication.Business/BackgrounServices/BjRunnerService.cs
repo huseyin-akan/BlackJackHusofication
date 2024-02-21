@@ -97,6 +97,7 @@ public class BjRunnerService : BackgroundService
 
             ntf = new() {PlayerId = spot.Player.Id, Earning = earning, Balance = spot.Player.Balance};
             ntf.Earning += earning;
+            results.Add(ntf);
         }
 
         //We notify each player about earnings.
@@ -352,8 +353,12 @@ public class BjRunnerService : BackgroundService
 
     private async Task PlayForDealer()
     {
-        //Open dealer's card.
-        //TODO-HUS
+        var renderSecretCardTask = Task.Delay(2000); //render card showing
+        
+        //Open dealer's card and notify everyone.
+        var cardNotificationTask = _allPlayers.NotifySecretCard(new() { SecretCard = _game.Table.Dealer.Hand.Cards[1] });
+
+        await Task.WhenAll(renderSecretCardTask, cardNotificationTask);
 
         //If everyone is busted, dealer wins. 
         if (!_game.Table.Spots.Any(x => !x.Hand.IsBusted)

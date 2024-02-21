@@ -29,5 +29,6 @@ public interface IBlackJackGameClient
     Task NotifyCountDown(CountDownNotification notification);
     Task NotifyAwaitingCardAction(AwaitingCardActionNotification notification);
     Task NotifyCardDeal(CardDealNotification notification);
+    Task NotifySecretCard(SecretCardNotification notification);
     Task NotifyRoundWinnigs(RoundWinningsNotification notification);
 }
