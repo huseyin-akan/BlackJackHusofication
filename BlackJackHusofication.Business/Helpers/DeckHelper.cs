@@ -12,7 +12,7 @@ public class DeckHelper
         {
             foreach (CardType cardType in Enum.GetValues(typeof(CardType)))
             {
-                if (cardType == CardType.ShufflerCard) continue;
+                if (cardType < 0) continue; //These cards are not playing cards.
 
                 foreach (CardValue cardValue in Enum.GetValues(typeof(CardValue)))
                 {

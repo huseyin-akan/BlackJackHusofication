@@ -36,40 +36,47 @@ public class BjRunnerService : BackgroundService
 
         _logger.LogInformation("oyun başladı dostum. Let's gooo");
 
-        //Game Loop
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            _logger.LogInformation("Hadi lan kekolar bet atın");
+            //Game Loop
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Hadi lan kekolar bet atın");
 
-            _game.CancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = _game.CancellationTokenSource.Token;
+                _game.CancellationTokenSource = new CancellationTokenSource();
+                var cancellationToken = _game.CancellationTokenSource.Token;
 
-            //We give to the players 10 seconds to bet. 
-            var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 10, cancellationToken);
-            if (!startNewRound) continue;
+                //We give to the players 10 seconds to bet. 
+                var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 10, cancellationToken);
+                if (!startNewRound) continue;
 
-            _game.CancellationTokenSource = new CancellationTokenSource();
-            cancellationToken = _game.CancellationTokenSource.Token;
-            _logger.LogError("Bet atan bir keko var. Gel de paranı yiyim senin enayi!");
+                _game.CancellationTokenSource = new CancellationTokenSource();
+                cancellationToken = _game.CancellationTokenSource.Token;
+                _logger.LogError("Bet atan bir keko var. Gel de paranı yiyim senin enayi!");
 
-            //We should notify here that a new round is starting
-            _game.RoundNo++;
-            await _allPlayers.RoundStarted(_game.RoundNo);
+                //We should notify here that a new round is starting
+                _game.RoundNo++;
+                await _allPlayers.RoundStarted(_game.RoundNo);
 
-            //We should deal cards for all players who has betted and for dealer.
-            await DealCardsToPlayersWhoBetted();
+                //We should deal cards for all players who has betted and for dealer.
+                await DealCardsToPlayersWhoBetted();
 
-            //We should ask for actions. Each action has 30 seconds timeout. If no action is taken, stand is played.
-            await AskAllPlayersForActions();
+                //We should ask for actions. Each action has 30 seconds timeout. If no action is taken, stand is played.
+                await AskAllPlayersForActions();
 
-            //Play for dealer
-            await PlayForDealer();
+                //Play for dealer
+                await PlayForDealer();
 
-            //After all players are asked for actions, we calculate the earnings.
-            await CalculateAndDeliverEarnings();
+                //After all players are asked for actions, we calculate the earnings.
+                await CalculateAndDeliverEarnings();
 
-            //Round is over, we should collect the cards, reset the values.
-            ResetAfterRoundEnd();
+                //Round is over, we should collect the cards, reset the values.
+                ResetAfterRoundEnd();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
         }
 
         _logger.LogError("La noli hata var");
