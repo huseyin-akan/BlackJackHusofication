@@ -7,7 +7,7 @@ public class BjGameDto
     public required int RoomId { get; set; }
     public required string Name { get; set; }
     public int RoundNo { get; set; }
-    public TableDto Table { get; }
+    public TableDto Table { get; init; }
 
     public BjGameDto()
     {

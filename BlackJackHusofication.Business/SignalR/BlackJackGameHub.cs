@@ -1,9 +1,9 @@
 ﻿using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.DataAccess.StaticData;
 using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 using Microsoft.AspNetCore.SignalR;
-using System.Numerics;
 
 namespace BlackJackHusofication.Business.SignalR;
 public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameClient>
@@ -47,7 +47,7 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         var connectionId = Context.ConnectionId;
         var (room, player) = roomManager.SitPlayerToSpot(roomName, connectionId, spotId);
 
-        var sitPlayerTask =  Clients.Group(roomName).SitPlayer(room); //TODO-HUS burada tum roomu değil sadece oyuncuları update etmeliyiz. UpdateSitingPlayers olabilir.
+        var sitPlayerTask =  Clients.Group(roomName).UpdateSpots(room.Table.Spots );
         var updatePlayerTask = Clients.Caller.UpdatePlayer(player);
 
         await Task.WhenAll(sitPlayerTask, updatePlayerTask);

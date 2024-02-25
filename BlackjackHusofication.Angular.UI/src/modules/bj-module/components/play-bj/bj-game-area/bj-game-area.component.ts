@@ -3,7 +3,7 @@ import { BjGame } from '../../../../../models/bjGame';
 import { BjGameHubService } from '../../../../../services/bjGameHubService';
 import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
-import { Card, CardAction } from '../../../../../models/card';
+import { CardAction } from '../../../../../models/card';
 import { Player } from '../../../../../models/player';
 import { SecretCardNotification } from '../../../../../models/notifications/secretCardNotification';
 
@@ -24,7 +24,7 @@ export class BjGameAreaComponent {
   isBtnStandShow = false;
   isBtnSplitShow = false;
   isBtnDoubleShow = false;
-  isActionforSpotNo;
+  activeSpotNo : number;
   isActionForSplit = false;
   isRenderActionButtons = false;
   tbBetAmount : number;
@@ -53,6 +53,7 @@ export class BjGameAreaComponent {
 
     this.bjGameHubService.awaitCardActionNotification$.subscribe(ntf => {
       this.bjCounterForAction = ntf.seconds;
+      this.activeSpotNo = ntf.spotNo;
       this.renderActionButtons(ntf.spotNo, ntf.isForSplitHand);
     })
 
@@ -108,18 +109,19 @@ export class BjGameAreaComponent {
   startNewRound(){
     this.bjCounterForAction = 0;
     this.bjCounter = 0;
+    this.activeSpotNo = -1;
   }
 
   renderActionButtons(spotNo : number, isForSplitHand : boolean){
     this.isRenderActionButtons = true;
     this.isActionForSplit = isForSplitHand;
-    this.isActionforSpotNo = spotNo;
+    this.activeSpotNo = spotNo;
     this.isBtnHitShow = true;
     this.isBtnStandShow  =true;
   }
 
   playAction(action: string){
     const cardAction: CardAction = CardAction[action as keyof typeof CardAction];
-    this.bjGameHubService.playCardAction(cardAction, this.activeRoom.name, this.isActionforSpotNo, this.isActionForSplit)
+    this.bjGameHubService.playCardAction(cardAction, this.activeRoom.name, this.activeSpotNo, this.isActionForSplit)
   }
 }

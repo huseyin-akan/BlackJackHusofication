@@ -1,6 +1,43 @@
-﻿namespace BlackJackHusofication.Model.Models;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public record Card(CardType CardType, CardValue CardValue, string? CardImg);
+namespace BlackJackHusofication.Model.Models;
+
+public record Card
+{
+    public required CardType CardType { get; init; }
+    public required CardValue CardValue { get; init; }
+    public string? CardImg { get; init; }
+
+    [SetsRequiredMembers]
+    public Card(CardType cardType, CardValue cardValue, string? cardImg)
+    {
+        CardType = cardType;
+        CardValue = cardValue;
+        CardImg = cardImg;
+    }
+
+    public Card() { }
+
+    public static Card CreateSecretCard()
+    {
+        return new Card()
+        {
+            CardType = CardType.SecretCard,
+            CardValue = CardValue.SecretCard,
+            CardImg = "card-back.jpg",
+        };
+    }
+
+    public static Card CreateShufflerCard()
+    {
+        return new Card()
+        {
+            CardType = CardType.ShufflerCard,
+            CardValue = CardValue.ShufflerCard,
+            CardImg = "shuffler-card.svg"
+        };
+    }
+};
 
 public enum CardValue
 {

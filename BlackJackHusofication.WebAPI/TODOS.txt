@@ -4,4 +4,5 @@
 10- UpdateSitingPlayers metodu ekleyelim. Metot adını arat. Ekleyeceğn yeri bul.
 11- Player should be able to leave table
 12- Bizde blackjack varken kasa kart çekmeye devam etti.
-13- 
+13- Oyuna tekrar bağlanınca oturdğun masalara oturduğunu göremiyoruz
+14- Deck bilgisini gönderiyoruz. Buyuk hata

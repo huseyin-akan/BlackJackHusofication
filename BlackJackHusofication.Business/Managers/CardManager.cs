@@ -33,6 +33,7 @@ public class CardManager
             CardValue.Eight => 8,
             CardValue.Nine => 9,
             CardValue.Ten or CardValue.Jack or CardValue.Queen or CardValue.King => 10,
+            CardValue.SecretCard => 0,
             _ => throw new Exception("Böyle bir kart değeri yok.")
         };
     }

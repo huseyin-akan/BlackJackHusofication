@@ -1,4 +1,5 @@
 ﻿using BlackJackHusofication.Model.Models;
+using Microsoft.VisualBasic;
 
 namespace BlackJackHusofication.Business.Helpers;
 
@@ -16,12 +17,12 @@ public class DeckHelper
 
                 foreach (CardValue cardValue in Enum.GetValues(typeof(CardValue)))
                 {
-                    if (cardValue == CardValue.ShufflerCard) continue;
-                    fullDeck.Add(new Card(cardType, cardValue, $"{cardType.ToString()[0].ToString().ToLower()}_{(int) cardValue}.svg"));
+                    if (cardValue < 0) continue; //These cards are not playing cards.
+                    fullDeck.Add(new Card(cardType, cardValue, $"{cardType.ToString()[0].ToString().ToLower()}_{(int)cardValue}.svg"));
                 }
             }
         }
-        fullDeck.Add(new Card(CardType.ShufflerCard, CardValue.ShufflerCard, "shuffler-card.svg"));
+        fullDeck.Add(Card.CreateShufflerCard());
 
         return fullDeck;
     }

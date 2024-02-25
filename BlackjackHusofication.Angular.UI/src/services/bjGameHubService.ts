@@ -13,6 +13,7 @@ import { RoundWinningsNotification } from '../models/notifications/roundWinnings
 import { SecretCardNotification } from '../models/notifications/secretCardNotification';
 import { Player } from '../models/player';
 import { Hand } from '../models/hand';
+import { Spot } from '../models/spot';
 
 @Injectable({
   providedIn: 'root',
@@ -71,10 +72,7 @@ export class BjGameHubService {
       this.activeRoomSubject.next(room);
     });
 
-    this.hubConnection.on('SitPlayer', (room: BjGame) => {
-      this.activeRoom = room;
-      this.activeRoomSubject.next(room);
-    });
+
 
     this.hubConnection.on('PlayerBet', (betAmount: number, spotIndex : number) => {
       console.log('gelen degerler' , betAmount, spotIndex)
@@ -95,6 +93,11 @@ export class BjGameHubService {
 
     this.hubConnection.on('UpdateHand', (hand: Hand) => {
       this.updateHand.next(hand);
+    });
+
+    this.hubConnection.on('UpdateSpots', (spots: Spot[]) => {
+      this.activeRoom.table.spots = spots;
+      this.activeRoomSubject.next(this.activeRoom);
     });
 
     //Notifications:

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace BlackJackHusofication.Business.BackgroundServices;
 
@@ -76,11 +77,8 @@ public class BjRunnerService : BackgroundService
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            _logger.LogError(ex.Message);
         }
-
-        _logger.LogError("La noli hata var");
-        _logger.LogDebug("hadi bakalım");
     }
 
     private async Task CalculateAndDeliverEarnings()
@@ -214,33 +212,24 @@ public class BjRunnerService : BackgroundService
             _game.Table.Deck.Remove(card);
         }
 
+        if (spotNo == 0 && _game.Table.Dealer.Hand.Cards.Count == 1) //For the second card deal of dealer we notify secret card
+        {
+            _game.Table.Dealer.SecretCard = card with { };
+            card = Card.CreateSecretCard();   //we deal secret card for now
+        }
+
         hand.Cards.Add(card);
-        var oldHandValue = hand.HandValue;
         hand.HandValue = CardManager.GetCountOfHand(hand);
 
         if (hand.HandValue > 21) hand.IsBusted = true;
         else if (hand.HandValue == 21 && hand.Cards.Count == 2) hand.IsBlackJack = true;
 
-        //We should notify the new hand and new card
-        if (spotNo == 0 && _game.Table.Dealer.Hand.Cards.Count == 2) //For the second card deal of dealer we dont notify
+        await _allPlayers.NotifyCardDeal(new CardDealNotification //We should notify the new card
         {
-            await _allPlayers.NotifyCardDeal(new CardDealNotification
-            {
-                NewCard = new(CardType.SecretCard, CardValue.SecretCard, "card-back.jpg"), //we deal secret card for now
-                SpotNo = spotNo,
-                HandValue = oldHandValue
-            });
-        }
-        else
-        {
-            await _allPlayers.NotifyCardDeal(new CardDealNotification
-            {
-                NewCard = card,
-                SpotNo = spotNo,
-                HandValue = hand.HandValue
-            });
-            await _allPlayers.UpdateHand(hand);
-        }
+            NewCard = card,
+            SpotNo = spotNo,
+            HandValue = hand.HandValue
+        });
 
         await dealingAnimation;
     }

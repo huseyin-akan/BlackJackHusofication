@@ -1,13 +1,12 @@
-﻿namespace BlackJackHusofication.Model.Models;
+﻿namespace BlackJackHusofication.Model.Models.Dtos;
 
-public class Dealer 
+public class DealerDto
 {
-    public Dealer()
+    public DealerDto()
     {
         Hand = new();
     }
     public required string Id { get; set; }
     public required string Name { get; set; }
     public Hand Hand { get; set; }
-    public Card? SecretCard { get; set; }
 }

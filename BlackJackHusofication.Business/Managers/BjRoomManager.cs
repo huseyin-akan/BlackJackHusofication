@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 
@@ -20,7 +21,8 @@ public class BjRoomManager(IMapper mapper)
 
         Player newPlayer = new() { Id = connectionId, Name = "Husoman", Balance = 5000 }; //TODO-HUS oyuncu adı.
         room.Players.Add(newPlayer);
-        return (mapper.Map<BjGameDto>(room), newPlayer);
+        var mapped = MappingHelper.MapBjGameObject(room);
+        return (mapped , newPlayer);
     }
     
     public BjGame RemovePlayerFromRoom(string roomName, string connectionId)

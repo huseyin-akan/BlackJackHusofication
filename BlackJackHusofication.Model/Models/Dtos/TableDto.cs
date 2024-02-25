@@ -1,8 +1,10 @@
-﻿namespace BlackJackHusofication.Model.Models;
+﻿using BlackJackHusofication.Model.Models.Dtos;
+
+namespace BlackJackHusofication.Model.Models;
 
 public class TableDto
 {
-    public Dealer Dealer { get; set; }
+    public DealerDto Dealer { get; set; }
     public Card? ShufflerCard { get; set; }
     public decimal Balance { get; set; }
     public List<Spot> Spots{ get; set; }
