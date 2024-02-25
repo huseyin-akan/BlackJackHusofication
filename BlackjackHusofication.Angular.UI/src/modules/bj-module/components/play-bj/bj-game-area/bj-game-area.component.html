@@ -58,13 +58,14 @@
                 <mat-form-field class="tb-bet-amount">
                     <input matInput type="number" [(ngModel)]="tbBetAmount">
                 </mat-form-field>
-                <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)"
-                    aria-label="Example icon button with a delete icon">
+                <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)">
                     <mat-icon>add_circle</mat-icon>
                 </button>
-                <button mat-fab color="primary" (click)="betPlayer(spot.id)"
-                    aria-label="sdf">
+                <button mat-fab color="primary" (click)="betPlayer(spot.id)">
                     <mat-icon>local_atm</mat-icon>
+                </button>
+                <button *ngIf="spot?.player" mat-fab color="primary" (click)="playerLeaveSpot(spot.id)">
+                    <mat-icon>cancel</mat-icon>
                 </button>
             </div>
         </div>

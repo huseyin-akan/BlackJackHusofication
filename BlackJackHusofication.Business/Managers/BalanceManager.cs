@@ -95,6 +95,8 @@ internal class BalanceManager
 
     public static void PlayerBet(Player player, BjGame game, decimal betAmount, int spotIndex)
     {
+        if(player.Balance < betAmount) throw new BjGameException("Bet atmak için bakiyeniz yetersiz!!!");
+        
         player.Balance -= betAmount;
         game.Table.Balance += betAmount;
         var spot = game.Table.Spots.FirstOrDefault(x => x.Id == spotIndex) 

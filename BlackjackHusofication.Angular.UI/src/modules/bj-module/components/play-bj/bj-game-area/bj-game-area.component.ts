@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { BjGame } from '../../../../../models/bjGame';
-import { BjGameHubService } from '../../../../../services/bjGameHubService';
+import { BjGameHubService } from '../../../../../services/bjGameHubService.service';
 import { BjEventType } from '../../../../../models/events/bjEventType';
 import { CardDealNotification } from '../../../../../models/notifications/cardDealNotification';
 import { CardAction } from '../../../../../models/card';
 import { Player } from '../../../../../models/player';
 import { SecretCardNotification } from '../../../../../models/notifications/secretCardNotification';
+import { ToasterService } from '../../../../../services/toasterService.service';
 
 @Component({
   selector: 'app-bj-game-area',
@@ -29,16 +30,11 @@ export class BjGameAreaComponent {
   isRenderActionButtons = false;
   tbBetAmount : number;
 
-  constructor(private bjGameHubService :BjGameHubService){}
+  constructor(private bjGameHubService :BjGameHubService, private toasterService: ToasterService){}
 
   ngOnInit(){
-    console.log(this.activeRoom);
-
-    this.bjGameHubService.joinGroup("Blackjack - 1");
-
     this.bjGameHubService.activeRoom$.subscribe(room => {
       this.activeRoom = room
-      console.log("beni de zıplattı vellaaha")
     });
 
     this.bjGameHubService.countDownNotification$.subscribe(ntf => {
@@ -58,7 +54,6 @@ export class BjGameAreaComponent {
     })
 
     this.bjGameHubService.roundWinningsNotification$.subscribe(ntf => {
-      console.log(ntf);
       this.currentUser.balance = ntf.balance;
       this.winningAmount = ntf.earning;
 
@@ -75,12 +70,23 @@ export class BjGameAreaComponent {
   }
 
   sitPlayer(spotId: number): void {
-    this.bjGameHubService.sitPlayer(this.activeRoom.name, spotId)
+    this.bjGameHubService.sitPlayer(spotId)
+    .catch((err) => console.error(err));
+  }
+
+  playerLeaveSpot(spotId: number): void {
+    this.bjGameHubService.playerLeaveSpot(spotId)
     .catch((err) => console.error(err));
   }
 
   betPlayer(spotId: number): void {
-    this.bjGameHubService.playerBet(this.activeRoom.name, spotId, this.tbBetAmount)
+    var spot = this.activeRoom.table.spots.find(x => x.id == spotId);
+    if(spot.player.balance < this.tbBetAmount){
+      this.toasterService.showError("Bet miktarı bakiyenizden yuksek olamaz.");
+      return;
+    }
+
+    this.bjGameHubService.playerBet(spotId, this.tbBetAmount)
     .catch((err) => console.error(err));
   }
 
@@ -122,6 +128,6 @@ export class BjGameAreaComponent {
 
   playAction(action: string){
     const cardAction: CardAction = CardAction[action as keyof typeof CardAction];
-    this.bjGameHubService.playCardAction(cardAction, this.activeRoom.name, this.activeSpotNo, this.isActionForSplit)
+    this.bjGameHubService.playCardAction(cardAction, this.activeSpotNo, this.isActionForSplit)
   }
 }

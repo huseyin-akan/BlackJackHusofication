@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { SimulationLog } from '../../../../models/log-models/simulationLogs';
-import { BjGameHubService } from '../../../../services/bjGameHubService';
+import { BjGameHubService } from '../../../../services/bjGameHubService.service';
 
 @Component({
   selector: 'app-bj-simulator',

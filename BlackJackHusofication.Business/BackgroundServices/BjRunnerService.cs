@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using BlackJackHusofication.Business.Helpers;
+﻿using BlackJackHusofication.Business.Helpers;
 using BlackJackHusofication.Business.Managers;
+using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.Model.Models;
 using BlackJackHusofication.Model.Models.Notifications;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace BlackJackHusofication.Business.BackgroundServices;
 
@@ -19,7 +19,6 @@ public class BjRunnerService : BackgroundService
     private readonly BjGame _game;
     private readonly BjRoomManager _bjRoomManager;
     private readonly IBlackJackGameClient _allPlayers;
-    private readonly IMapper _mapper;
 
     public BjRunnerService(IServiceProvider services, int roomId)
     {
@@ -28,7 +27,6 @@ public class BjRunnerService : BackgroundService
         _bjRoomManager = services.GetRequiredService<BjRoomManager>();
         _game = _bjRoomManager.CreateRoom($"BJ-{roomId}", roomId);
         _allPlayers = _hubContext.Clients.Group(_game.Name);
-        _mapper = services.GetRequiredService<IMapper>();
     }
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -133,7 +131,7 @@ public class BjRunnerService : BackgroundService
         }
         _game.Table.Dealer.Hand = new();
 
-        _allPlayers.UpdateTable(_mapper.Map<TableDto>(_game.Table));
+        _allPlayers.UpdateTable( MappingHelper.MapTableObject(_game.Table) );
     }
 
     private void CollectAllCards()
@@ -219,10 +217,7 @@ public class BjRunnerService : BackgroundService
         }
 
         hand.Cards.Add(card);
-        hand.HandValue = CardManager.GetCountOfHand(hand);
-
-        if (hand.HandValue > 21) hand.IsBusted = true;
-        else if (hand.HandValue == 21 && hand.Cards.Count == 2) hand.IsBlackJack = true;
+        CardManager.GetCountOfHandAndUpdateHand(hand);
 
         await _allPlayers.NotifyCardDeal(new CardDealNotification //We should notify the new card
         {
@@ -241,6 +236,8 @@ public class BjRunnerService : BackgroundService
 
         foreach (var spot in _game.Table.Spots.Where(x => x.BetAmount > 0))
         {
+            if (spot.Hand.IsBlackJack) continue; 
+
             var shouldAskForNormalHand = true;
             while (shouldAskForNormalHand)
             {
@@ -249,7 +246,8 @@ public class BjRunnerService : BackgroundService
                     for (int i = ACTION_TIME; i > 0; i--)
                     {
                         var delayTask = Task.Delay(1_000, cancellationToken);
-                        var notificationTask = _hubContext.Clients.Group(_game.Name)
+                        
+                        var notificationTask = _allPlayers
                             .NotifyAwaitingCardAction(new AwaitingCardActionNotification { SpotNo = spot.Id, Seconds = i });
                         await Task.WhenAll(delayTask, notificationTask);
                         if (spot.Hand.NextCardAction is not null) break;
@@ -327,8 +325,8 @@ public class BjRunnerService : BackgroundService
         spot.Hand.Cards.Remove(splitCard);
         spot.SplittedHand.Cards.Add(splitCard);
 
-        spot.SplittedHand.HandValue = CardManager.GetCountOfHand(spot.SplittedHand);
-        spot.Hand.HandValue = CardManager.GetCountOfHand(spot.Hand);
+        CardManager.GetCountOfHandAndUpdateHand(spot.SplittedHand);
+        CardManager.GetCountOfHandAndUpdateHand(spot.Hand);
 
         BalanceManager.PlayerSplit(spot, _game.Table);
 
@@ -357,6 +355,11 @@ public class BjRunnerService : BackgroundService
         var renderSecretCardTask = Task.Delay(2_000); //render card showing
 
         //Open dealer's card and notify everyone.
+        ArgumentNullException.ThrowIfNull(_game.Table.Dealer.SecretCard);
+        _game.Table.Dealer.Hand.Cards[1] = _game.Table.Dealer.SecretCard with { };
+        _game.Table.Dealer.SecretCard = null;
+        CardManager.GetCountOfHandAndUpdateHand(_game.Table.Dealer.Hand);
+
         var cardNotificationTask = _allPlayers.NotifySecretCard(new() { SecretCard = _game.Table.Dealer.Hand.Cards[1], HandValue = _game.Table.Dealer.Hand.HandValue });
 
         await Task.WhenAll(renderSecretCardTask, cardNotificationTask);
@@ -364,6 +367,10 @@ public class BjRunnerService : BackgroundService
         //If everyone who has betted is busted, dealer wins. 
         if (!_game.Table.Spots.Any(x => x.BetAmount > 0 && !x.Hand.IsBusted)
             && !_game.Table.Spots.Any(x => x.BetAmount > 0 && x.SplittedHand is not null && !x.SplittedHand.IsBusted)) return;
+
+        //If everyone who has betted has blackjack, and dealer doesnt, then everyone wins
+        if (!_game.Table.Spots.Any(x => x.BetAmount > 0 && !x.Hand.IsBlackJack)
+            && !_game.Table.Spots.Any(x => x.BetAmount > 0 && x.SplittedHand is not null && !x.SplittedHand.IsBlackJack)) return;
 
         //Otherwise dealers opens card and hits until at least 17
         while (_game.Table.Dealer.Hand.HandValue < 17)

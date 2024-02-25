@@ -1,5 +1,4 @@
 ﻿using BlackJackHusofication.Business.Managers;
-using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.DataAccess.StaticData;
 using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
@@ -53,12 +52,12 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
         await Task.WhenAll(sitPlayerTask, updatePlayerTask);
     }
 
-    public async Task PlayerLeaveTable(string roomName, int spotId)
+    public async Task PlayerLeaveSpot(string roomName, int spotId)
     {
         var connectionId = Context.ConnectionId;
         var room = roomManager.RemovePlayerFromSpot(roomName, connectionId, spotId);
 
-        await Clients.Group(roomName).PlayerLeaveTable(room);
+        await Clients.Group(roomName).PlayerLeaveSpot(room);
     }
 
     public async Task SendMessage(string connectionId, string groupName)

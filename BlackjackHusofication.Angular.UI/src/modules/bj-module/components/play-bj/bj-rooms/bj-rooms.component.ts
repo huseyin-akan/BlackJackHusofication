@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BjGameHubService } from '../../../../../services/bjGameHubService';
+import { BjGameHubService } from '../../../../../services/bjGameHubService.service';
 import { BjGame } from '../../../../../models/bjGame';
 
 @Component({

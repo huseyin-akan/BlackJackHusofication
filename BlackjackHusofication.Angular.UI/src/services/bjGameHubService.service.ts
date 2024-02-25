@@ -72,7 +72,10 @@ export class BjGameHubService {
       this.activeRoomSubject.next(room);
     });
 
-
+    this.hubConnection.on('PlayerLeaveSpot', (room: BjGame) => {
+      this.activeRoom = room;
+      this.activeRoomSubject.next(room);
+    });
 
     this.hubConnection.on('PlayerBet', (betAmount: number, spotIndex : number) => {
       console.log('gelen degerler' , betAmount, spotIndex)
@@ -81,7 +84,7 @@ export class BjGameHubService {
       this.activeRoomSubject.next(this.activeRoom);
     });
 
-    //Updates:
+    //--------------------------UPDATES------------------------
     this.hubConnection.on('UpdateTable', (table: Table) => {
       this.activeRoom.table = table;
       this.activeRoomSubject.next(this.activeRoom);
@@ -99,8 +102,9 @@ export class BjGameHubService {
       this.activeRoom.table.spots = spots;
       this.activeRoomSubject.next(this.activeRoom);
     });
+    //--------------------------UPDATES------------------------
 
-    //Notifications:
+    //--------------------------NOTIFICATIONS------------------------
     this.hubConnection.on('NotifyCountDown', (notification: CountDownNotification) => {
       this.countDownNotification.next(notification);
     });
@@ -120,6 +124,7 @@ export class BjGameHubService {
     this.hubConnection.on('NotifySecretCard', (notification: SecretCardNotification) => {
       this.secretCardNotification.next(notification);
     });
+    //--------------------------NOTIFICATIONS------------------------
 
     this.hubConnection.on('RoundStarted', (roundNumber : number) => {
       
@@ -149,15 +154,6 @@ export class BjGameHubService {
       setTimeout(() => this.start(), 2000);
     }
   }
-  
-  // getAllRooms() : BjRoom[] {
-  //   let dataToReturn : BjRoom[] = [];
-  //   this.hubConnection
-  //     .invoke('GetAllBjRooms')
-  //     .then(data => dataToReturn =data)
-  //     .catch((err) => console.error(err));
-  //     return dataToReturn;
-  // }
 
   sendAction(action: string, data?: any): void {
     this.hubConnection
@@ -165,23 +161,28 @@ export class BjGameHubService {
       .catch((err) => console.error(err));
   }
 
-  joinGroup(groupName : string){
+  joinGroup(roomName : string){
     return this.hubConnection
-      .invoke('PlayerJoinRoom', groupName);
+      .invoke('PlayerJoinRoom', roomName);
   }
 
-  sitPlayer(groupName : string, spotId : number){
+  sitPlayer(spotId : number){
     return this.hubConnection
-      .invoke('SitPlayer', groupName, spotId);     
+      .invoke('SitPlayer', this.activeRoom.name, spotId);     
   }
 
-  playerBet(roomName : string, spotId: number, betAmount : number){
+  playerLeaveSpot(spotId: number){
     return this.hubConnection
-      .invoke('PlayerBet', roomName, spotId, betAmount);  
+      .invoke('PlayerLeaveSpot', this.activeRoom.name, spotId);  
   }
 
-  playCardAction(action: CardAction, roomName: string, spotNo: number, isForSplittedHand : boolean = false){
+  playerBet(spotId: number, betAmount : number){
     return this.hubConnection
-      .invoke('PlayCardAction', action, roomName, spotNo, isForSplittedHand);  
+      .invoke('PlayerBet', this.activeRoom.name, spotId, betAmount);  
+  }
+
+  playCardAction(action: CardAction, spotNo: number, isForSplittedHand : boolean = false){
+    return this.hubConnection
+      .invoke('PlayCardAction', action, this.activeRoom.name, spotNo, isForSplittedHand);  
   }
 }

@@ -34,7 +34,7 @@ public class OptimalMoveManagerTests
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
-        playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
+        playerHand.HandValue = CardManager.GetCountOfHandAndUpdateHand(playerHand);
 
         var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand, isSplitHand);
 
@@ -57,7 +57,7 @@ public class OptimalMoveManagerTests
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
-        playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
+        playerHand.HandValue = CardManager.GetCountOfHandAndUpdateHand(playerHand);
 
         var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
 
@@ -89,7 +89,7 @@ public class OptimalMoveManagerTests
         Hand playerHand = new();
         playerHand.Cards.Add(new(CardType.Hearts, cardValue1));
         playerHand.Cards.Add(new(CardType.Hearts, cardValue2));
-        playerHand.HandValue = CardManager.GetCountOfHand(playerHand);
+        playerHand.HandValue = CardManager.GetCountOfHandAndUpdateHand(playerHand);
 
         var actualAction = OptimalMoveHelper.MakeOptimalMove(dealer.Hand.Cards[0], playerHand);
 

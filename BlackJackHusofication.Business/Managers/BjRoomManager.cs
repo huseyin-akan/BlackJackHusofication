@@ -1,11 +1,10 @@
-﻿using AutoMapper;
-using BlackJackHusofication.Business.Mappings;
+﻿using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.Model.Exceptions;
 using BlackJackHusofication.Model.Models;
 
 namespace BlackJackHusofication.Business.Managers;
 
-public class BjRoomManager(IMapper mapper)
+public class BjRoomManager
 {
     private readonly Dictionary<string, BjGame> _rooms = [];
     public readonly List<string> _clients = [];

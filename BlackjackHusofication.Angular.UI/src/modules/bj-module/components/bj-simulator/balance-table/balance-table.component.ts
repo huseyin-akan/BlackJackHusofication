@@ -1,6 +1,6 @@
 import { BjSimulation } from '../../../../../models/bjSimulation';
 import { Component } from '@angular/core';
-import { BjGameHubService } from '../../../../../services/bjGameHubService';
+import { BjGameHubService } from '../../../../../services/bjGameHubService.service';
 
 @Component({
   selector: 'app-balance-table',

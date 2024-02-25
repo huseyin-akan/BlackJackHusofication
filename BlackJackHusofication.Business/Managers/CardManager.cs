@@ -4,7 +4,7 @@ namespace BlackJackHusofication.Business.Managers;
 
 public class CardManager
 {
-    public static int GetCountOfHand(Hand hand)
+    public static int GetCountOfHandAndUpdateHand(Hand hand)
     {
         var result = 0;
         foreach (var card in hand.Cards)
@@ -16,6 +16,12 @@ public class CardManager
             result += 10; //then count ace as 11
             hand.IsSoft = true;
         }
+
+        hand.HandValue = result;
+
+        if (hand.HandValue > 21) hand.IsBusted = true;
+        else if (hand.HandValue == 21 && hand.Cards.Count == 2) hand.IsBlackJack = true;
+
         return result;
     }
 

@@ -1,12 +1,10 @@
 ﻿using BlackJackHusofication.Business;
 using BlackJackHusofication.Business.BackgroundServices;
 using BlackJackHusofication.Business.Managers;
-using BlackJackHusofication.Business.Mappings;
 using BlackJackHusofication.Business.Services.Abstracts;
 using BlackJackHusofication.Business.Services.Concretes;
 using BlackJackHusofication.Business.SignalR;
 using BlackJackHusofication.WebAPI.MinimalEndpoints;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +23,6 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<BjSimulationManager>();
 builder.Services.AddSingleton<BjRoomManager>();
 builder.Services.AddSingleton<IGameLogger, SimulationLogsService>();
-
-builder.Services.AddAutoMapper( typeof(MappingProfile)); //TODO-HUS bunu bi araştıralım, direk profile yazmak hızlandırmalı.
 
 BusinessServiceRegistraiton.AddBusinessDependencies(builder.Services);
 

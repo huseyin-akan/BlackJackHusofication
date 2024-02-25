@@ -14,7 +14,7 @@ public interface IBlackJackGameClient
     Task GetAllBjRooms(List<string> bjRooms);
     Task PlayerJoinedRoom(BjGameDto bjRoom);
     Task PlayerLeftRoom(BjGame bjRoom); //TODO-HUS BjGameDto olmalı sanırım
-    Task PlayerLeaveTable(BjGame bjRoom); //TODO-HUS BjGameDto olmalı sanırım
+    Task PlayerLeaveSpot(BjGame bjRoom); //TODO-HUS BjGameDto olmalı sanırım
     Task PlayerAction(CardAction action);
     Task PlayerBet(decimal betAmount, int spotIndex);
     Task RoundStarted(int roundNumber);
