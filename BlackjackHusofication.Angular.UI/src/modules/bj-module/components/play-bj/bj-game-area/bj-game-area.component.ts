@@ -29,6 +29,7 @@ export class BjGameAreaComponent {
   isActionForSplit = false;
   isRenderActionButtons = false;
   tbBetAmount : number;
+  isAcceptingBets = false;
 
   constructor(private bjGameHubService :BjGameHubService, private toasterService: ToasterService){}
 
@@ -40,6 +41,7 @@ export class BjGameAreaComponent {
     this.bjGameHubService.countDownNotification$.subscribe(ntf => {
       if(ntf.eventType == BjEventType.AcceptingBets){
         this.bjCounter = ntf.seconds;
+        this.isAcceptingBets = ntf.seconds>0;
       }
     })
 

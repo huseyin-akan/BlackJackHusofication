@@ -58,10 +58,10 @@
                 <mat-form-field class="tb-bet-amount">
                     <input matInput type="number" [(ngModel)]="tbBetAmount">
                 </mat-form-field>
-                <button *ngIf="!spot?.player" mat-fab color="primary" (click)="sitPlayer(spot.id)">
+                <button *ngIf="!spot?.player"  mat-fab color="primary" (click)="sitPlayer(spot.id)">
                     <mat-icon>add_circle</mat-icon>
                 </button>
-                <button mat-fab color="primary" (click)="betPlayer(spot.id)">
+                <button *ngIf="spot?.player" mat-fab color="primary" [disabled]="!isAcceptingBets" (click)="betPlayer(spot.id)">
                     <mat-icon>local_atm</mat-icon>
                 </button>
                 <button *ngIf="spot?.player" mat-fab color="primary" (click)="playerLeaveSpot(spot.id)">

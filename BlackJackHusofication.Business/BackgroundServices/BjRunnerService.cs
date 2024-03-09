@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
 
 namespace BlackJackHusofication.Business.BackgroundServices;
 
@@ -47,6 +46,7 @@ public class BjRunnerService : BackgroundService
 
                 //We give to the players 10 seconds to bet. 
                 var startNewRound = await CheckIfPlayersBetInTime(BjEventType.AcceptingBets, 10, cancellationToken);
+                _game.IsAcceptingBets = false;
                 if (!startNewRound) continue;
 
                 _game.CancellationTokenSource = new CancellationTokenSource();
@@ -156,9 +156,10 @@ public class BjRunnerService : BackgroundService
 
     private async Task<bool> CheckIfPlayersBetInTime(BjEventType eventType, int seconds, CancellationToken cancellationToken)
     {
+        _game.IsAcceptingBets = true;
         try
         {
-            for (int i = 0; i < seconds; i++) //each second
+            for (int i = 0; i <= seconds; i++) //each second
             {
                 var delayTask = Task.Delay(1_000, cancellationToken);
                 var notificationTask = _hubContext.Clients.Group(_game.Name).NotifyCountDown(new CountDownNotification(eventType, seconds - i));
@@ -178,7 +179,6 @@ public class BjRunnerService : BackgroundService
 
         //If any player sitting in the table has betted, then start the round
         if (_game.Table.Spots.Any(x => x.BetAmount != 0)) return true;
-
         return false;
     }
 

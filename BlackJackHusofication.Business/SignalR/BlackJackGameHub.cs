@@ -89,6 +89,8 @@ public class BlackJackGameHub(BjRoomManager roomManager) : Hub<IBlackJackGameCli
     {
         var player = roomManager.GetSittingPlayer(roomName, spotIndex) ?? throw new BjGameException("Koltuk oyuncu yok!!!"); ;
         var game = roomManager.GetGame(roomName);
+
+        if (!game.IsAcceptingBets) throw new BjGameException("It is not betting time. Cannot bet!");
         
         //player bets
         BalanceManager.PlayerBet(player, game, betAmount, spotIndex);

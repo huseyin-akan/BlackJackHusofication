@@ -1,5 +1,4 @@
 ﻿5 - Başka bir odaya join olunca, mevcut bir odada aktifsek  session kapatılacak.
 7-  bizde blackjack kasada blackjack varken 0 lira ödedi.
-9 - Bet zamanı değilken bet butonları disabled olmalı. Backendde ise bet zamanı değilken yapılan bete hata fırlatmalı.
 18- Bazen ilk elemana kart action sormadan ilerliyor.
-19- 
+19- Bet butonlarını betting time dışında disable ettik ama bu sefer de bet attıktan sonra bakiye anlık güncellenmez oldu.
